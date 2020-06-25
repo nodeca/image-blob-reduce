@@ -61,3 +61,8 @@ change).
 ### .toCanvas(in_blob, { max: size }) => Promise(out_canvas)
 
 The same as `.toBlob()`, but with canvas output.
+
+
+### .pica
+
+Reexport of `require('pica')`, for convenience.
