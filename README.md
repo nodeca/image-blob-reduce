@@ -5,14 +5,19 @@ image-blob-reduce - downscale blobs with images inside
 [![NPM version](https://img.shields.io/npm/v/image-blob-reduce.svg)](https://www.npmjs.org/package/image-blob-reduce)
 
 
-> Wrapper for [pica](https://github.com/nodeca/pica) to work with blobs, with some sugar.
+> Wrapper for [pica](https://github.com/nodeca/pica) to work with blobs, with
+> some sugar.
 
-This is `pica` wrapper for conveniend work with images from file input fields. While `pica`
-works in raw bitmaps, this package operates with "image files". Additional features are:
+This is `pica` wrapper for convenient work with images from file input fields.
+While `pica` works with raw bitmaps, this package operates with "image files".
+Additional features are:
 
-- \[jpeg] Apply orienation to downscaled result
-- \[jpeg] Keep metadata, but with pached orientation & removed original color profile
-- Easy to monkey-patch, if you wish different defaults.
+- \[jpeg] Apply orientation to downscaled result.
+- \[jpeg] Keep metadata, but with patched orientation & removed original color
+  profile.
+- Easy to monkey-patch for your needs.
+
+**[Demo](https://nodeca.github.io/image-blob-reduce/)**
 
 
 Install
@@ -42,13 +47,16 @@ API
 
 Create new reducer. Options:
 
-- `pica` - instance of `pica`, if you wish different defaults or shareable webworkers pool.
+- `pica` - instance of `pica`, if you wish different defaults or shareable
+  webworkers pool.
 
 Short call: `require('image_blob_reduce')()`
 
 ### .toBlob(in_blob, { max: size }) => Promise(out_blob)
 
-Downscale image to fit into `max`\*`max` size. If blob contains jpeg, then orientation is applied and metadata from irigina image trabsfered (with minimal change).
+Downscale image to fit into `max`\*`max` size. If blob contains jpeg, then
+orientation is applied and metadata from original image reused (with minimal
+change).
 
 ### .toCanvas(in_blob, { max: size }) => Promise(out_canvas)
 
