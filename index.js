@@ -8,7 +8,7 @@ function ImageBlobReduce(options) {
   if (!(this instanceof ImageBlobReduce)) return new ImageBlobReduce(options);
 
   options = options || {};
-  this.pica = options.pica || require('pica/dist/pica.js')();
+  this.pica = options.pica || require('pica')();
   this.initialized = false;
 }
 
