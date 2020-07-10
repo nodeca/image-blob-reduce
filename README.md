@@ -24,7 +24,7 @@ Install
 -------
 
 ```sh
-npm install pica
+npm install image-blob-reduce
 ```
 
 Usage
