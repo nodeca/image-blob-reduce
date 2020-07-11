@@ -35,8 +35,9 @@ const reduce = require('image-blob-reduce')();
 
 //...
 
-reduce.toBlob(image_blob, { max: 1000 })
-.then(blob => { ... });
+reduce
+  .toBlob(image_blob, { max: 1000 })
+  .then(blob => { ... });
 ```
 
 
@@ -52,13 +53,19 @@ Create new reducer. Options:
 
 Short call: `require('image_blob_reduce')()`
 
-### .toBlob(in_blob, { max: size }) => Promise(out_blob)
+### .toBlob(in_blob, options) => Promise(out_blob)
 
 Downscale image to fit into `max`\*`max` size. If blob contains jpeg, then
 orientation is applied and metadata from original image reused (with minimal
 change).
 
-### .toCanvas(in_blob, { max: size }) => Promise(out_canvas)
+Options:
+
+- __max__ - max allowed image size.
+- __pica `.resize()` options__ - `alpha`, `unsharpAmount`, `unsharpRadius`,
+  `unsharpThreshold`, `cancelToken`
+
+### .toCanvas(in_blob, options) => Promise(out_canvas)
 
 The same as `.toBlob()`, but with canvas output.
 

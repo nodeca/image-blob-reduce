@@ -2,12 +2,14 @@
 'use strict';
 
 var jpeg_plugins = require('./lib/jpeg_plugins');
-
+var assign       = require('./lib/utils').assign;
+var pick         = require('./lib/utils').pick;
 
 function ImageBlobReduce(options) {
   if (!(this instanceof ImageBlobReduce)) return new ImageBlobReduce(options);
 
   options = options || {};
+
   this.pica = options.pica || require('pica')();
   this.initialized = false;
 }
@@ -21,39 +23,43 @@ ImageBlobReduce.prototype.init = function () {
 
 
 ImageBlobReduce.prototype.to_blob = function (blob, options) {
-  options = options || {};
-
-  var _env = { blob: blob, max: options.max || Infinity, pica: this.pica };
+  var opts = assign({ max: Infinity }, options);
+  var env = {
+    blob: blob,
+    opts: opts
+  };
 
   if (!this.initialized) {
     this.init();
     this.initialized = true;
   }
 
-  return Promise.resolve(_env)
+  return Promise.resolve(env)
     .then(this._blob_to_image)
     .then(this._transform)
     .then(this._cleanup)
     .then(this._create_blob)
-    .then(function (env) { return env.out_blob; });
+    .then(function (_env) { return _env.out_blob; });
 };
 
 
 ImageBlobReduce.prototype.to_canvas = function (blob, options) {
-  options = options || {};
-
-  var _env = { blob: blob, max: options.max || Infinity, pica: this.pica };
+  var opts = assign({ max: Infinity }, options);
+  var env = {
+    blob: blob,
+    opts: opts
+  };
 
   if (!this.initialized) {
     this.init();
     this.initialized = true;
   }
 
-  return Promise.resolve(_env)
+  return Promise.resolve(env)
     .then(this._blob_to_image)
     .then(this._transform)
     .then(this._cleanup)
-    .then(function (env) { return env.out_canvas; });
+    .then(function (_env) { return _env.out_canvas; });
 };
 
 
@@ -106,7 +112,7 @@ ImageBlobReduce.prototype._blob_to_image = function (env) {
 
 
 ImageBlobReduce.prototype._transform = function (env) {
-  var scale_factor = env.max / Math.max(env.image.width, env.image.height);
+  var scale_factor = env.opts.max / Math.max(env.image.width, env.image.height);
 
   if (scale_factor > 1) scale_factor = 1;
 
@@ -117,7 +123,20 @@ ImageBlobReduce.prototype._transform = function (env) {
   env.out_canvas.width = out_width;
   env.out_canvas.height = out_height;
 
-  return env.pica.resize(env.image, env.out_canvas, { alpha: env.blob.type === 'image/png' })
+  // By default use alpha for png only
+  var pica_opts = { alpha: env.blob.type === 'image/png' };
+
+  // Extract pica options if been passed
+  assign(pica_opts, pick(env.opts, [
+    'alpha',
+    'unsharpAmount',
+    'unsharpRadius',
+    'unsharpThreshold',
+    'cancelToken'
+  ]));
+
+  return this.pica
+    .resize(env.image, env.out_canvas, pica_opts)
     .then(function () { return env; });
 };
 
@@ -136,7 +155,7 @@ ImageBlobReduce.prototype._cleanup = function (env) {
 
 
 ImageBlobReduce.prototype._create_blob = function (env) {
-  return env.pica.toBlob(env.out_canvas, env.blob.type)
+  return this.pica.toBlob(env.out_canvas, env.blob.type)
     .then(function (blob) {
       env.out_blob = blob;
       return env;
