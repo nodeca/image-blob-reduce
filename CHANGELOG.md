@@ -1,3 +1,10 @@
+1.0.3 / 2020-07-11
+------------------
+
+- Create canvas via pica helper.
+- Rearrange utilities to simplify modifications.
+
+
 1.0.2 / 2020-07-11
 ------------------
 
