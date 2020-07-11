@@ -2,8 +2,7 @@
 'use strict';
 
 var jpeg_plugins = require('./lib/jpeg_plugins');
-var assign       = require('./lib/utils').assign;
-var pick         = require('./lib/utils').pick;
+var utils        = require('./lib/utils');
 
 function ImageBlobReduce(options) {
   if (!(this instanceof ImageBlobReduce)) return new ImageBlobReduce(options);
@@ -12,6 +11,8 @@ function ImageBlobReduce(options) {
 
   this.pica = options.pica || require('pica')();
   this.initialized = false;
+
+  this.utils = utils;
 }
 
 
@@ -23,7 +24,7 @@ ImageBlobReduce.prototype.init = function () {
 
 
 ImageBlobReduce.prototype.to_blob = function (blob, options) {
-  var opts = assign({ max: Infinity }, options);
+  var opts = utils.assign({ max: Infinity }, options);
   var env = {
     blob: blob,
     opts: opts
@@ -44,7 +45,7 @@ ImageBlobReduce.prototype.to_blob = function (blob, options) {
 
 
 ImageBlobReduce.prototype.to_canvas = function (blob, options) {
-  var opts = assign({ max: Infinity }, options);
+  var opts = utils.assign({ max: Infinity }, options);
   var env = {
     blob: blob,
     opts: opts
@@ -125,13 +126,7 @@ ImageBlobReduce.prototype._transform = function (env) {
   var pica_opts = { alpha: env.blob.type === 'image/png' };
 
   // Extract pica options if been passed
-  assign(pica_opts, pick(env.opts, [
-    'alpha',
-    'unsharpAmount',
-    'unsharpRadius',
-    'unsharpThreshold',
-    'cancelToken'
-  ]));
+  this.utils.assign(pica_opts, this.utils.pick_pica_resize_options(env.opts));
 
   return this.pica
     .resize(env.image, env.out_canvas, pica_opts)

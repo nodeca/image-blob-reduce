@@ -53,6 +53,7 @@ Create new reducer. Options:
 
 Short call: `require('image_blob_reduce')()`
 
+
 ### .toBlob(in_blob, options) => Promise(out_blob)
 
 Downscale image to fit into `max`\*`max` size. If blob contains jpeg, then
@@ -65,11 +66,20 @@ Options:
 - __pica `.resize()` options__ - `alpha`, `unsharpAmount`, `unsharpRadius`,
   `unsharpThreshold`, `cancelToken`
 
+
 ### .toCanvas(in_blob, options) => Promise(out_canvas)
 
 The same as `.toBlob()`, but with canvas output.
 
 
-### .pica
+### .utils
 
-Reexport of `require('pica')`, for convenience.
+`require('./lib/utils')`, to simplify modifications.
+
+
+### Reexports 
+
+More relinking:
+
+- `ImageBlobReduce.pica` => `require('pica')`
+- `ImageBlobReduce.utils` => `require('./lib/utils')`
