@@ -3,6 +3,7 @@
 
 - Added `pica` options support (`alpha`, `unsharpAmount`, `unsharpRadius`,
   `unsharpThreshold`, `cancelToken`).
+- `pica` version bump.
 
 
 1.0.1 / 2020-06-25
