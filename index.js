@@ -119,9 +119,7 @@ ImageBlobReduce.prototype._transform = function (env) {
   var out_width = Math.max(Math.round(env.image.width * scale_factor), 1);
   var out_height = Math.max(Math.round(env.image.height * scale_factor), 1);
 
-  env.out_canvas = document.createElement('canvas');
-  env.out_canvas.width = out_width;
-  env.out_canvas.height = out_height;
+  env.out_canvas = this.pica.options.createCanvas(out_width, out_height);
 
   // By default use alpha for png only
   var pica_opts = { alpha: env.blob.type === 'image/png' };
