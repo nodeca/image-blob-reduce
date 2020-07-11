@@ -890,7 +890,7 @@ module.exports.assign = function assign(to) {
 };
 
 
-module.exports.pick = function pick(from, props) {
+function pick(from, props) {
   var to = {};
 
   props.forEach(function (key) {
@@ -898,7 +898,22 @@ module.exports.pick = function pick(from, props) {
   });
 
   return to;
-};
+}
+
+
+function pick_pica_resize_options(from) {
+  return pick(from, [
+    'alpha',
+    'unsharpAmount',
+    'unsharpRadius',
+    'unsharpThreshold',
+    'cancelToken'
+  ]);
+}
+
+
+module.exports.pick = pick;
+module.exports.pick_pica_resize_options = pick_pica_resize_options;
 
 },{}],4:[function(require,module,exports){
 (function (global){
@@ -3151,8 +3166,7 @@ module.exports = Pica;
 'use strict';
 
 var jpeg_plugins = require('./lib/jpeg_plugins');
-var assign       = require('./lib/utils').assign;
-var pick         = require('./lib/utils').pick;
+var utils        = require('./lib/utils');
 
 function ImageBlobReduce(options) {
   if (!(this instanceof ImageBlobReduce)) return new ImageBlobReduce(options);
@@ -3161,6 +3175,8 @@ function ImageBlobReduce(options) {
 
   this.pica = options.pica || require('pica')();
   this.initialized = false;
+
+  this.utils = utils;
 }
 
 
@@ -3172,7 +3188,7 @@ ImageBlobReduce.prototype.init = function () {
 
 
 ImageBlobReduce.prototype.to_blob = function (blob, options) {
-  var opts = assign({ max: Infinity }, options);
+  var opts = utils.assign({ max: Infinity }, options);
   var env = {
     blob: blob,
     opts: opts
@@ -3193,7 +3209,7 @@ ImageBlobReduce.prototype.to_blob = function (blob, options) {
 
 
 ImageBlobReduce.prototype.to_canvas = function (blob, options) {
-  var opts = assign({ max: Infinity }, options);
+  var opts = utils.assign({ max: Infinity }, options);
   var env = {
     blob: blob,
     opts: opts
@@ -3268,21 +3284,13 @@ ImageBlobReduce.prototype._transform = function (env) {
   var out_width = Math.max(Math.round(env.image.width * scale_factor), 1);
   var out_height = Math.max(Math.round(env.image.height * scale_factor), 1);
 
-  env.out_canvas = document.createElement('canvas');
-  env.out_canvas.width = out_width;
-  env.out_canvas.height = out_height;
+  env.out_canvas = this.pica.options.createCanvas(out_width, out_height);
 
   // By default use alpha for png only
   var pica_opts = { alpha: env.blob.type === 'image/png' };
 
   // Extract pica options if been passed
-  assign(pica_opts, pick(env.opts, [
-    'alpha',
-    'unsharpAmount',
-    'unsharpRadius',
-    'unsharpThreshold',
-    'cancelToken'
-  ]));
+  this.utils.assign(pica_opts, this.utils.pick_pica_resize_options(env.opts));
 
   return this.pica
     .resize(env.image, env.out_canvas, pica_opts)
