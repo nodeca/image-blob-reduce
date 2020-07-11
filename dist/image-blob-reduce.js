@@ -872,6 +872,35 @@ module.exports.jpeg_attach_orig_segments = function (env) {
 };
 
 },{"./image_traverse":1}],3:[function(require,module,exports){
+'use strict';
+
+
+module.exports.assign = function assign(to) {
+  var from;
+
+  for (var s = 1; s < arguments.length; s++) {
+    from = Object(arguments[s]);
+
+    for (var key in from) {
+      if (Object.prototype.hasOwnProperty.call(from, key)) to[key] = from[key];
+    }
+  }
+
+  return to;
+};
+
+
+module.exports.pick = function pick(from, props) {
+  var to = {};
+
+  props.forEach(function (key) {
+    if (Object.prototype.hasOwnProperty.call(from, key)) to[key] = from[key];
+  });
+
+  return to;
+};
+
+},{}],4:[function(require,module,exports){
 (function (global){
 /*!
 
@@ -1679,15 +1708,13 @@ module.exports.cib_quality_name = function cib_quality_name(num) {
   return 'high';
 };
 
-module.exports.cib_support = function cib_support() {
+module.exports.cib_support = function cib_support(createCanvas) {
   return Promise.resolve().then(function () {
-    if (typeof createImageBitmap === 'undefined' || typeof document === 'undefined') {
+    if (typeof createImageBitmap === 'undefined') {
       return false;
     }
 
-    var c = document.createElement('canvas');
-    c.width = 100;
-    c.height = 100;
+    var c = createCanvas(100, 100);
     return createImageBitmap(c, 0, 0, 100, 100, {
       resizeWidth: 10,
       resizeHeight: 10,
@@ -2568,7 +2595,13 @@ var DEFAULT_PICA_OPTS = {
   tile: 1024,
   concurrency: concurrency,
   features: ['js', 'wasm', 'ww'],
-  idle: 2000
+  idle: 2000,
+  createCanvas: function createCanvas(width, height) {
+    var tmpCanvas = document.createElement('canvas');
+    tmpCanvas.width = width;
+    tmpCanvas.height = height;
+    return tmpCanvas;
+  }
 };
 var DEFAULT_RESIZE_OPTS = {
   quality: 3,
@@ -2701,7 +2734,7 @@ Pica.prototype.init = function () {
   if (!CAN_CREATE_IMAGE_BITMAP) {
     checkCibResize = Promise.resolve(false);
   } else {
-    checkCibResize = utils.cib_support().then(function (status) {
+    checkCibResize = utils.cib_support(this.options.createCanvas).then(function (status) {
       if (_this.features.cib && features.indexOf('cib') < 0) {
         _this.debug('createImageBitmap() resize supported, but disabled by config');
 
@@ -2789,9 +2822,8 @@ Pica.prototype.resize = function (from, to, options) {
 
         _this2.debug('Unsharp result');
 
-        var tmpCanvas = document.createElement('canvas');
-        tmpCanvas.width = opts.toWidth;
-        tmpCanvas.height = opts.toHeight;
+        var tmpCanvas = _this2.options.createCanvas(opts.toWidth, opts.toHeight);
+
         var tmpCtx = tmpCanvas.getContext('2d', {
           alpha: Boolean(opts.alpha)
         });
@@ -2870,9 +2902,8 @@ Pica.prototype.resize = function (from, to, options) {
             //
             _this2.debug('Draw tile imageBitmap/image to temporary canvas');
 
-            var tmpCanvas = document.createElement('canvas');
-            tmpCanvas.width = tile.width;
-            tmpCanvas.height = tile.height;
+            var tmpCanvas = _this2.options.createCanvas(tile.width, tile.height);
+
             var tmpCtx = tmpCanvas.getContext('2d', {
               alpha: Boolean(opts.alpha)
             });
@@ -3047,9 +3078,7 @@ Pica.prototype.resize = function (from, to, options) {
 
       if (!isLastStage) {
         // create temporary canvas
-        tmpCanvas = document.createElement('canvas');
-        tmpCanvas.width = toWidth;
-        tmpCanvas.height = toHeight;
+        tmpCanvas = _this2.options.createCanvas(toWidth, toHeight);
       }
 
       return tileAndResize(from, isLastStage ? to : tmpCanvas, opts).then(function () {
@@ -3122,12 +3151,14 @@ module.exports = Pica;
 'use strict';
 
 var jpeg_plugins = require('./lib/jpeg_plugins');
-
+var assign       = require('./lib/utils').assign;
+var pick         = require('./lib/utils').pick;
 
 function ImageBlobReduce(options) {
   if (!(this instanceof ImageBlobReduce)) return new ImageBlobReduce(options);
 
   options = options || {};
+
   this.pica = options.pica || require('pica')();
   this.initialized = false;
 }
@@ -3141,39 +3172,43 @@ ImageBlobReduce.prototype.init = function () {
 
 
 ImageBlobReduce.prototype.to_blob = function (blob, options) {
-  options = options || {};
-
-  var _env = { blob: blob, max: options.max || Infinity, pica: this.pica };
+  var opts = assign({ max: Infinity }, options);
+  var env = {
+    blob: blob,
+    opts: opts
+  };
 
   if (!this.initialized) {
     this.init();
     this.initialized = true;
   }
 
-  return Promise.resolve(_env)
+  return Promise.resolve(env)
     .then(this._blob_to_image)
     .then(this._transform)
     .then(this._cleanup)
     .then(this._create_blob)
-    .then(function (env) { return env.out_blob; });
+    .then(function (_env) { return _env.out_blob; });
 };
 
 
 ImageBlobReduce.prototype.to_canvas = function (blob, options) {
-  options = options || {};
-
-  var _env = { blob: blob, max: options.max || Infinity, pica: this.pica };
+  var opts = assign({ max: Infinity }, options);
+  var env = {
+    blob: blob,
+    opts: opts
+  };
 
   if (!this.initialized) {
     this.init();
     this.initialized = true;
   }
 
-  return Promise.resolve(_env)
+  return Promise.resolve(env)
     .then(this._blob_to_image)
     .then(this._transform)
     .then(this._cleanup)
-    .then(function (env) { return env.out_canvas; });
+    .then(function (_env) { return _env.out_canvas; });
 };
 
 
@@ -3226,7 +3261,7 @@ ImageBlobReduce.prototype._blob_to_image = function (env) {
 
 
 ImageBlobReduce.prototype._transform = function (env) {
-  var scale_factor = env.max / Math.max(env.image.width, env.image.height);
+  var scale_factor = env.opts.max / Math.max(env.image.width, env.image.height);
 
   if (scale_factor > 1) scale_factor = 1;
 
@@ -3237,7 +3272,20 @@ ImageBlobReduce.prototype._transform = function (env) {
   env.out_canvas.width = out_width;
   env.out_canvas.height = out_height;
 
-  return env.pica.resize(env.image, env.out_canvas, { alpha: env.blob.type === 'image/png' })
+  // By default use alpha for png only
+  var pica_opts = { alpha: env.blob.type === 'image/png' };
+
+  // Extract pica options if been passed
+  assign(pica_opts, pick(env.opts, [
+    'alpha',
+    'unsharpAmount',
+    'unsharpRadius',
+    'unsharpThreshold',
+    'cancelToken'
+  ]));
+
+  return this.pica
+    .resize(env.image, env.out_canvas, pica_opts)
     .then(function () { return env; });
 };
 
@@ -3256,7 +3304,7 @@ ImageBlobReduce.prototype._cleanup = function (env) {
 
 
 ImageBlobReduce.prototype._create_blob = function (env) {
-  return env.pica.toBlob(env.out_canvas, env.blob.type)
+  return this.pica.toBlob(env.out_canvas, env.blob.type)
     .then(function (blob) {
       env.out_blob = blob;
       return env;
@@ -3291,5 +3339,5 @@ ImageBlobReduce.prototype._getUint8Array = function (blob) {
 module.exports = ImageBlobReduce;
 module.exports.pica = require('pica');
 
-},{"./lib/jpeg_plugins":2,"pica":3}]},{},[])("/")
+},{"./lib/jpeg_plugins":2,"./lib/utils":3,"pica":4}]},{},[])("/")
 });
