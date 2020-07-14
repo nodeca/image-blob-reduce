@@ -11,7 +11,7 @@ describe('Browser', function () {
   it('should resize down to max size', async function () {
     let image  = fs.readFileSync(path.join(__dirname, 'test.jpg'));
     let blob   = new Blob([ image ], { type: 'image/jpeg' });
-    let canvas = await resize.to_canvas(blob, { max: 10 });
+    let canvas = await resize.toCanvas(blob, { max: 10 });
 
     assert.strictEqual(canvas.width, 5);
     assert.strictEqual(canvas.height, 10);
@@ -20,7 +20,7 @@ describe('Browser', function () {
   it('should fix jpeg orientation', async function () {
     let image  = fs.readFileSync(path.join(__dirname, 'test.jpg'));
     let blob   = new Blob([ image ], { type: 'image/jpeg' });
-    let canvas = await resize.to_canvas(blob);
+    let canvas = await resize.toCanvas(blob);
 
     assert.strictEqual(canvas.width, 16);
     assert.strictEqual(canvas.height, 32);
@@ -34,7 +34,7 @@ describe('Browser', function () {
   it('should resize into blob', async function () {
     let image  = fs.readFileSync(path.join(__dirname, 'test.jpg'));
     let blob   = new Blob([ image ], { type: 'image/jpeg' });
-    let out    = await resize.to_blob(blob, { max: 10 });
+    let out    = await resize.toBlob(blob, { max: 10 });
 
     assert.strictEqual(out.type, 'image/jpeg');
   });

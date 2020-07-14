@@ -5,7 +5,7 @@ var reducer = new (require('../../'))();
 window.addEventListener('DOMContentLoaded', function () {
   document.getElementById('uploader').addEventListener('change', function () {
     reducer
-      .to_blob(
+      .toBlob(
         this.files[0],
         {
           max: 200,

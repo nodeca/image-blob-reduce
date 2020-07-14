@@ -1,3 +1,10 @@
+1.0.4 / 2020-07-14
+------------------
+
+- Fixed public method names. Should be `.toCanvas()` and `.toBlob()`, as in doc.
+  Old names are left as aliases until 2.0 and will be removed. 
+
+
 1.0.3 / 2020-07-11
 ------------------
 
