@@ -3187,7 +3187,7 @@ ImageBlobReduce.prototype.init = function () {
 };
 
 
-ImageBlobReduce.prototype.to_blob = function (blob, options) {
+ImageBlobReduce.prototype.toBlob = function (blob, options) {
   var opts = utils.assign({ max: Infinity }, options);
   var env = {
     blob: blob,
@@ -3208,7 +3208,11 @@ ImageBlobReduce.prototype.to_blob = function (blob, options) {
 };
 
 
-ImageBlobReduce.prototype.to_canvas = function (blob, options) {
+// Temporary alias until 2.x
+ImageBlobReduce.prototype.to_blob = ImageBlobReduce.prototype.toBlob;
+
+
+ImageBlobReduce.prototype.toCanvas = function (blob, options) {
   var opts = utils.assign({ max: Infinity }, options);
   var env = {
     blob: blob,
@@ -3226,6 +3230,10 @@ ImageBlobReduce.prototype.to_canvas = function (blob, options) {
     .then(this._cleanup)
     .then(function (_env) { return _env.out_canvas; });
 };
+
+
+// Temporary alias until 2.x
+ImageBlobReduce.prototype.to_canvas = ImageBlobReduce.prototype.toCanvas;
 
 
 ImageBlobReduce.prototype.before = function (method_name, fn) {
