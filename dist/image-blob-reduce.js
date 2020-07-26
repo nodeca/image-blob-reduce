@@ -751,9 +751,10 @@ module.exports.jpeg_add_comment = function (jpeg_bin, comment) {
 var image_traverse = require('./image_traverse');
 
 
-module.exports.jpeg_patch_exif = function (env) {
+function jpeg_patch_exif(env) {
   return this._getUint8Array(env.blob).then(function (data) {
     env.is_jpeg = image_traverse.is_jpeg(data);
+
     if (!env.is_jpeg) return Promise.resolve(env);
 
     env.orig_blob = env.blob;
@@ -786,10 +787,10 @@ module.exports.jpeg_patch_exif = function (env) {
 
     return env;
   });
-};
+}
 
 
-module.exports.jpeg_rotate_canvas = function (env) {
+function jpeg_rotate_canvas(env) {
   if (!env.is_jpeg) return Promise.resolve(env);
 
   var orientation = env.orientation - 1;
@@ -819,13 +820,21 @@ module.exports.jpeg_rotate_canvas = function (env) {
   env.out_canvas = canvas;
 
   return Promise.resolve(env);
-};
+}
 
 
-module.exports.jpeg_attach_orig_segments = function (env) {
+function jpeg_attach_orig_segments(env) {
   if (!env.is_jpeg) return Promise.resolve(env);
 
-  return this._getUint8Array(env.blob).then(function (data) {
+  return Promise.all([
+    this._getUint8Array(env.blob),
+    this._getUint8Array(env.out_blob)
+  ]).then(function (res) {
+    var data = res[0];
+    var data_out = res[1];
+
+    if (image_traverse.is_jpeg(data_out)) return Promise.resolve(env);
+
     var segments = [];
 
     image_traverse.jpeg_segments_each(data, function (segment) {
@@ -861,15 +870,27 @@ module.exports.jpeg_attach_orig_segments = function (env) {
         return data.slice(segment.offset, segment.offset + segment.length);
       });
 
-    env.blob = new Blob([]
-      .concat([ data.slice(0, 20) ])
-      .concat(segments)
-      .concat([ data.slice(20) ])
-    , { type: 'image/jpeg' });
+    env.blob = new Blob(
+      [ data.slice(0, 20) ].concat(segments).concat([ data.slice(20) ]),
+      { type: 'image/jpeg' }
+    );
 
     return env;
   });
-};
+}
+
+
+function assign(reducer) {
+  reducer.before('_blob_to_image', jpeg_patch_exif);
+  reducer.after('_transform',      jpeg_rotate_canvas);
+  reducer.after('_create_blob',    jpeg_attach_orig_segments);
+}
+
+
+module.exports.jpeg_patch_exif = jpeg_patch_exif;
+module.exports.jpeg_rotate_canvas = jpeg_rotate_canvas;
+module.exports.jpeg_attach_orig_segments = jpeg_attach_orig_segments;
+module.exports.assign = assign;
 
 },{"./image_traverse":1}],3:[function(require,module,exports){
 'use strict';
@@ -3165,7 +3186,6 @@ module.exports = Pica;
 
 'use strict';
 
-var jpeg_plugins = require('./lib/jpeg_plugins');
 var utils        = require('./lib/utils');
 
 function ImageBlobReduce(options) {
@@ -3180,10 +3200,15 @@ function ImageBlobReduce(options) {
 }
 
 
+ImageBlobReduce.prototype.use = function (plugin /*, params, ... */) {
+  var args = [ this ].concat(Array.prototype.slice.call(arguments, 1));
+  plugin.apply(plugin, args);
+  return this;
+};
+
+
 ImageBlobReduce.prototype.init = function () {
-  this.before('_blob_to_image', jpeg_plugins.jpeg_patch_exif);
-  this.after('_transform',      jpeg_plugins.jpeg_rotate_canvas);
-  this.after('_create_blob',    jpeg_plugins.jpeg_attach_orig_segments);
+  this.use(require('./lib/jpeg_plugins').assign);
 };
 
 
