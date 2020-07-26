@@ -1,7 +1,8 @@
-1.0.4 / WIP
+1.0.5 / WIP
 ------------------
 
 - Added `.use()` method.
+- Check output blob type before transfer EXIF header.
 
 
 1.0.4 / 2020-07-14
