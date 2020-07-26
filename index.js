@@ -1,7 +1,6 @@
 
 'use strict';
 
-var jpeg_plugins = require('./lib/jpeg_plugins');
 var utils        = require('./lib/utils');
 
 function ImageBlobReduce(options) {
@@ -16,10 +15,15 @@ function ImageBlobReduce(options) {
 }
 
 
+ImageBlobReduce.prototype.use = function (plugin /*, params, ... */) {
+  var args = [ this ].concat(Array.prototype.slice.call(arguments, 1));
+  plugin.apply(plugin, args);
+  return this;
+};
+
+
 ImageBlobReduce.prototype.init = function () {
-  this.before('_blob_to_image', jpeg_plugins.jpeg_patch_exif);
-  this.after('_transform',      jpeg_plugins.jpeg_rotate_canvas);
-  this.after('_create_blob',    jpeg_plugins.jpeg_attach_orig_segments);
+  this.use(require('./lib/jpeg_plugins').assign);
 };
 
 

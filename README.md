@@ -83,6 +83,12 @@ for example.
 The same as `.before()`, but handler is injected after specified method.
 
 
+### .use(plugin_init, ...params) => this
+
+Sugar to simplify assign of external plugins. Just calls
+`plugin_init(this, ...params)`.
+
+
 ### .utils
 
 `require('./lib/utils')`, to simplify modifications.
