@@ -72,6 +72,17 @@ Options:
 The same as `.toBlob()`, but with canvas output.
 
 
+### .before(method_name, hook_fn)
+
+Inject your custom handler before specified method. See `.init()` source code
+for example.
+
+
+### .after(method_name, hook_fn)
+
+The same as `.before()`, but handler is injected after specified method.
+
+
 ### .utils
 
 `require('./lib/utils')`, to simplify modifications.
@@ -79,7 +90,27 @@ The same as `.toBlob()`, but with canvas output.
 
 ### Reexports 
 
-More relinking:
+- `ImageBlobReduce.pica` => `require('pica')` - useful to customize pica options.
 
-- `ImageBlobReduce.pica` => `require('pica')`
-- `ImageBlobReduce.utils` => `require('./lib/utils')`
+
+## Customization
+
+Since it's difficult to implement all possible options, this package is
+specially designed for easy customization. See source code first.
+
+- You can inherit class & replace existing methods.
+- You can add extra actions before/after existing method.
+
+For example, if you wish force output to be always jpeg with some quality:
+
+```js
+const reducer = require('image-blob-reduce')();
+
+reducer._create_blob = function (env) {
+  return this.pica.toBlob(env.out_canvas, 'image/jpeg', 0.8)
+    .then(function (blob) {
+      env.out_blob = blob;
+      return env;
+    });
+};
+```
