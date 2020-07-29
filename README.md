@@ -106,6 +106,7 @@ specially designed for easy customization. See source code first.
 
 - You can inherit class & replace existing methods.
 - You can add extra actions before/after existing method.
+- You can override existing methods of instance.
 
 For example, if you wish force output to be always jpeg with some quality:
 
@@ -119,4 +120,29 @@ reducer._create_blob = function (env) {
       return env;
     });
 };
+```
+
+Or rewrite scaling logic, introducing `min` option instead:
+
+```js
+const reducer = require('image-blob-reduce')();
+
+reducer._transform = function (env) { 
+  const scale_factor = env.opts.min / Math.min(env.image.width, env.image.height); 
+
+  if (scale_factor > 1) scale_factor = 1; 
+
+  const out_width = Math.max(Math.round(env.image.width * scale_factor), 1); 
+  const out_height = Math.max(Math.round(env.image.height * scale_factor), 1); 
+
+  env.out_canvas = this.pica.options.createCanvas(out_width, out_height); 
+
+  let pica_opts = { alpha: env.blob.type === 'image/png' }; 
+
+  this.utils.assign(pica_opts, this.utils.pick_pica_resize_options(env.opts)); 
+
+  return this.pica 
+    .resize(env.image, env.out_canvas, pica_opts) 
+    .then(function () { return env; }); 
+}; 
 ```
