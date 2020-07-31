@@ -1,3 +1,9 @@
+1.0.6 / WIP
+------------------
+
+- Fix: jpeg plugin should create canvas via `pica`.
+
+
 1.0.5 / 2020-07-26
 ------------------
 
