@@ -796,14 +796,12 @@ function jpeg_rotate_canvas(env) {
   var orientation = env.orientation - 1;
   if (!orientation) return Promise.resolve(env);
 
-  var canvas = document.createElement('canvas');
+  var canvas;
 
   if (orientation & 4) {
-    canvas.width  = env.out_canvas.height;
-    canvas.height = env.out_canvas.width;
+    canvas = this.pica.options.createCanvas(env.out_canvas.height, env.out_canvas.width);
   } else {
-    canvas.width  = env.out_canvas.width;
-    canvas.height = env.out_canvas.height;
+    canvas = this.pica.options.createCanvas(env.out_canvas.width, env.out_canvas.height);
   }
 
   var ctx = canvas.getContext('2d');
