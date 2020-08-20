@@ -1,3 +1,9 @@
+1.0.7 / 2020-08-20
+------------------
+
+- Added Safari canvas GC workaround,  https://github.com/nodeca/pica/issues/199.
+
+
 1.0.6 / 2020-07-31
 ------------------
 
