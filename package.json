@@ -21,7 +21,7 @@
     "prepublishOnly": "npm run gh-pages"
   },
   "dependencies": {
-    "pica": "^6.1.0"
+    "pica": "^6.1.1"
   },
   "devDependencies": {
     "browserify": "^16.5.1",
