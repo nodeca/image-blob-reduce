@@ -815,6 +815,10 @@ function jpeg_rotate_canvas(env) {
   ctx.drawImage(env.out_canvas, 0, 0);
   ctx.restore();
 
+  // Safari 12 workaround
+  // https://github.com/nodeca/pica/issues/199
+  env.out_canvas.width = env.out_canvas.height = 0;
+
   env.out_canvas = canvas;
 
   return Promise.resolve(env);
@@ -2867,7 +2871,10 @@ Pica.prototype.resize = function (from, to, options) {
 
         _this2.__mathlib.unsharp_mask(iData.data, opts.toWidth, opts.toHeight, opts.unsharpAmount, opts.unsharpRadius, opts.unsharpThreshold);
 
-        toCtx.putImageData(iData, 0, 0);
+        toCtx.putImageData(iData, 0, 0); // Safari 12 workaround
+        // https://github.com/nodeca/pica/issues/199
+
+        tmpCanvas.width = tmpCanvas.height = 0;
         iData = tmpCtx = tmpCanvas = toCtx = null;
 
         _this2.debug('Finished!');
@@ -2946,7 +2953,10 @@ Pica.prototype.resize = function (from, to, options) {
 
             _this2.debug('Get tile pixel data');
 
-            srcImageData = tmpCtx.getImageData(0, 0, tile.width, tile.height);
+            srcImageData = tmpCtx.getImageData(0, 0, tile.width, tile.height); // Safari 12 workaround
+            // https://github.com/nodeca/pica/issues/199
+
+            tmpCanvas.width = tmpCanvas.height = 0;
             tmpCtx = tmpCanvas = null;
           }
 
@@ -3120,6 +3130,14 @@ Pica.prototype.resize = function (from, to, options) {
         opts.width = toWidth;
         opts.height = toHeight;
         return processStages(stages, tmpCanvas, to, opts);
+      }).then(function (res) {
+        if (tmpCanvas) {
+          // Safari 12 workaround
+          // https://github.com/nodeca/pica/issues/199
+          tmpCanvas.width = tmpCanvas.height = 0;
+        }
+
+        return res;
       });
     };
 
@@ -3227,7 +3245,13 @@ ImageBlobReduce.prototype.toBlob = function (blob, options) {
     .then(this._transform)
     .then(this._cleanup)
     .then(this._create_blob)
-    .then(function (_env) { return _env.out_blob; });
+    .then(function (_env) {
+      // Safari 12 workaround
+      // https://github.com/nodeca/pica/issues/199
+      _env.out_canvas.width = _env.out_canvas.height = 0;
+
+      return _env.out_blob;
+    });
 };
 
 
