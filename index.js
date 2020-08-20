@@ -44,7 +44,13 @@ ImageBlobReduce.prototype.toBlob = function (blob, options) {
     .then(this._transform)
     .then(this._cleanup)
     .then(this._create_blob)
-    .then(function (_env) { return _env.out_blob; });
+    .then(function (_env) {
+      // Safari 12 workaround
+      // https://github.com/nodeca/pica/issues/199
+      _env.out_canvas.width = _env.out_canvas.height = 0;
+
+      return _env.out_blob;
+    });
 };
 
 
