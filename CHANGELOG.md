@@ -1,3 +1,10 @@
+2.0.0 / WIP
+------------------
+
+- Drop deprecated `.to_blob()` & `to_canvas()` (use `.toBlob()` & `toCanvas()`
+  instead).
+
+
 1.0.7 / 2020-08-20
 ------------------
 
