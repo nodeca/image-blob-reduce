@@ -1,6 +1,6 @@
 {
   "name": "image-blob-reduce",
-  "version": "1.0.7",
+  "version": "2.0.0",
   "description": "High quality image resize in browser for blobs (`pica` wrapper with some sugar)",
   "keywords": [
     "resize",
