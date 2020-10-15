@@ -9,12 +9,12 @@ export default {
     {
       file: 'dist/image-blob-reduce.js',
       format: 'umd',
-      name: 'imageBlobReduce'
+      name: 'ImageBlobReduce'
     },
     {
       file: 'dist/image-blob-reduce.min.js',
       format: 'umd',
-      name: 'imageBlobReduce',
+      name: 'ImageBlobReduce',
       plugins: [ terser() ]
     }
   ],

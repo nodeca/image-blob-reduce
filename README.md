@@ -40,6 +40,8 @@ reduce
   .then(blob => { ... });
 ```
 
+If you load prebuild script in browser, use `window.ImageBlobReduce`
+
 
 API
 ---

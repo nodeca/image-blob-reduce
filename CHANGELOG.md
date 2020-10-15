@@ -4,7 +4,8 @@
 - Drop deprecated `.to_blob()` & `to_canvas()` (use `.toBlob()` & `toCanvas()`
   instead).
 - Added separate `._calculate_size()` to simplify logic override.
-- browserify => rollup.js
+- browserify => rollup.js.
+- Global name in browser changed to `window.ImageBlobReduce`.
 
 
 1.0.7 / 2020-08-20
