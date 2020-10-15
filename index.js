@@ -41,6 +41,7 @@ ImageBlobReduce.prototype.toBlob = function (blob, options) {
 
   return Promise.resolve(env)
     .then(this._blob_to_image)
+    .then(this._calculate_size)
     .then(this._transform)
     .then(this._cleanup)
     .then(this._create_blob)
@@ -68,6 +69,7 @@ ImageBlobReduce.prototype.toCanvas = function (blob, options) {
 
   return Promise.resolve(env)
     .then(this._blob_to_image)
+    .then(this._calculate_size)
     .then(this._transform)
     .then(this._cleanup)
     .then(function (_env) { return _env.out_canvas; });
@@ -122,15 +124,32 @@ ImageBlobReduce.prototype._blob_to_image = function (env) {
 };
 
 
-ImageBlobReduce.prototype._transform = function (env) {
+ImageBlobReduce.prototype._calculate_size = function (env) {
+  //
+  // Note, if your need not "symmetric" resize logic, you MUST check
+  // `env.orientation` (set by plugins) and swap width/height appropriately.
+  //
   var scale_factor = env.opts.max / Math.max(env.image.width, env.image.height);
 
   if (scale_factor > 1) scale_factor = 1;
 
-  var out_width = Math.max(Math.round(env.image.width * scale_factor), 1);
-  var out_height = Math.max(Math.round(env.image.height * scale_factor), 1);
+  env.transform_width = Math.max(Math.round(env.image.width * scale_factor), 1);
+  env.transform_height = Math.max(Math.round(env.image.height * scale_factor), 1);
 
-  env.out_canvas = this.pica.options.createCanvas(out_width, out_height);
+  // Info for user plugins, to check if scaling applied
+  env.scale_factor = scale_factor;
+
+  return Promise.resolve(env);
+};
+
+
+ImageBlobReduce.prototype._transform = function (env) {
+  env.out_canvas = this.pica.options.createCanvas(env.transform_width, env.transform_height);
+
+  // Dim env temporary vars to prohibit use and avoid confusion when orientation
+  // changed. You should take real size from canvas.
+  env.transform_width = null;
+  env.transform_height = null;
 
   // By default use alpha for png only
   var pica_opts = { alpha: env.blob.type === 'image/png' };
