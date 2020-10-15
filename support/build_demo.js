@@ -10,5 +10,4 @@ shell.rm('-rf', 'demo');
 shell.mkdir('demo');
 
 shell.cp('support/demo_template/index.html', 'demo/index.html');
-shell.exec('node_modules/.bin/browserify support/demo_template/index.js \
-> demo/index.js');
+shell.exec('node_modules/.bin/rollup -c support/demo_template/rollup.config.js');

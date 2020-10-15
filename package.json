@@ -15,22 +15,21 @@
     "lint": "eslint .",
     "demo": "node support/build_demo.js",
     "gh-pages": "npm run demo && gh-pages -d demo -f",
-    "browserify": "browserify -r ./ -s image-blob-reduce -p [ browserify-header --file support/header.js ] > dist/image-blob-reduce.js",
-    "minify": "terser dist/image-blob-reduce.js -c -m > dist/image-blob-reduce.min.js",
-    "build": "npm run browserify && npm run minify",
+    "build": "rollup -c support/rollup.config.js",
     "prepublishOnly": "npm run gh-pages"
   },
   "dependencies": {
     "pica": "^6.1.1"
   },
   "devDependencies": {
-    "browserify": "^16.5.1",
-    "browserify-header": "^1.0.1",
+    "@rollup/plugin-commonjs": "^15.1.0",
+    "@rollup/plugin-node-resolve": "^9.0.0",
     "electron": "^9.0.4",
     "electron-mocha": "^8.2.2",
     "eslint": "^7.2.0",
     "gh-pages": "^3.0.0",
-    "shelljs": "^0.8.4",
-    "terser": "^4.7.0"
+    "rollup": "^2.29.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "shelljs": "^0.8.4"
   }
 }

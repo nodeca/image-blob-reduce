@@ -209,5 +209,6 @@ ImageBlobReduce.prototype._getUint8Array = function (blob) {
 };
 
 
+ImageBlobReduce.pica = require('pica');
+
 module.exports = ImageBlobReduce;
-module.exports.pica = require('pica');
