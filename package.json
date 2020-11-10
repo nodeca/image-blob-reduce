@@ -17,6 +17,8 @@
     "lib/",
     "dist/"
   ],
+  "main": "dist/image-blob-reduce.js",
+  "module": "dist/image-blob-reduce.es.js",
   "scripts": {
     "test": "npm run lint && npm run test-common && npm run test-browser",
     "test-common": "mocha ./test/common.js",
