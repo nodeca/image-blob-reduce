@@ -15,12 +15,6 @@ ignorePatterns:
   - demo
   - rollup.config.js
 
-overrides:
-  - files: [wrapper.js]
-    parserOptions:
-      sourceType: module
-      ecmaVersion: 2015
-
 rules:
   accessor-pairs:         2
   array-bracket-spacing:  [ 2, "always", { "singleValue": true, "objectsInArrays": true, "arraysInArrays": true } ]

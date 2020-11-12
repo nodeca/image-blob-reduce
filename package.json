@@ -14,17 +14,14 @@
   "license": "MIT",
   "files": [
     "index.js",
-    "wrapper.js",
     "lib/",
     "dist/"
   ],
-  "main": "./index.js",
-  "module": "./dist/image-blob-reduce.esm.js",
-  "browser": "./dist/image-blob-reduce.js",
   "exports": {
-    "import": "./wrapper.js",
+    "import": "./dist/image-blob-reduce.esm.js",
     "require": "./index.js"
   },
+  "module": "./dist/image-blob-reduce.esm.js",
   "scripts": {
     "test": "npm run lint && npm run test-common && npm run test-browser",
     "test-common": "mocha ./test/common.js",
