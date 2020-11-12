@@ -16,7 +16,11 @@ export default {
       format: 'umd',
       name: 'ImageBlobReduce',
       plugins: [ terser() ]
-    }
+    },
+    {
+      file: 'dist/image-blob-reduce.esm.js',
+      format: 'esm'
+    },
   ],
   plugins: [
     nodeResolve(),
