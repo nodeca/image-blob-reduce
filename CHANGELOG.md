@@ -1,3 +1,9 @@
+2.1.0 / 2020-11-12
+------------------
+
+- Added es6 modules support, #16.
+
+
 2.0.0 / 2020-10-15
 ------------------
 
@@ -31,7 +37,7 @@
 ------------------
 
 - Fixed public method names. Should be `.toCanvas()` and `.toBlob()`, as in doc.
-  Old names are left as aliases until 2.0 and will be removed. 
+  Old names are left as aliases until 2.0 and will be removed.
 
 
 1.0.3 / 2020-07-11
