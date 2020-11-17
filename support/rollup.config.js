@@ -18,7 +18,7 @@ export default {
       plugins: [ terser() ]
     },
     {
-      file: 'dist/image-blob-reduce.esm.js',
+      file: 'dist/image-blob-reduce.esm.mjs',
       format: 'esm'
     },
   ],

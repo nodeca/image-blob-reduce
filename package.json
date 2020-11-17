@@ -18,10 +18,10 @@
     "dist/"
   ],
   "exports": {
-    "import": "./dist/image-blob-reduce.esm.js",
+    "import": "./dist/image-blob-reduce.esm.mjs",
     "require": "./index.js"
   },
-  "module": "./dist/image-blob-reduce.esm.js",
+  "module": "./dist/image-blob-reduce.esm.mjs",
   "scripts": {
     "test": "npm run lint && npm run test-common && npm run test-browser",
     "test-common": "mocha ./test/common.js",
