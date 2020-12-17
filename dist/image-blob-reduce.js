@@ -1,5 +1,5 @@
 
-/*! image-blob-reduce 2.1.1 https://github.com/nodeca/image-blob-reduce @license MIT */
+/*! image-blob-reduce 2.2.0 https://github.com/nodeca/image-blob-reduce @license MIT */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
