@@ -1,3 +1,9 @@
+2.2.0 / 2020-12-18
+------------------
+
+- Exports package.json, needed for react-native and some bundlers, #19.
+
+
 2.1.1 / 2020-11-17
 ------------------
 
