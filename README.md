@@ -1,7 +1,7 @@
 image-blob-reduce - downscale blobs with images inside
 ======================================================
 
-[![Build Status](https://travis-ci.org/nodeca/image-blob-reduce.svg?branch=master)](https://travis-ci.org/nodeca/image-blob-reduce)
+[![CI](https://github.com/nodeca/image-blob-reduce/workflows/CI/badge.svg?branch=master)](https://github.com/nodeca/image-blob-reduce/actions)
 [![NPM version](https://img.shields.io/npm/v/image-blob-reduce.svg)](https://www.npmjs.org/package/image-blob-reduce)
 
 
@@ -96,7 +96,7 @@ Sugar to simplify assign of external plugins. Just calls
 `require('./lib/utils')`, to simplify modifications.
 
 
-### Reexports 
+### Reexports
 
 - `ImageBlobReduce.pica` => `require('pica')` - useful to customize pica options.
 
@@ -129,12 +129,12 @@ Or rewrite scaling logic, introducing `min` option instead:
 ```js
 const reducer = require('image-blob-reduce')();
 
-reducer._calculate_size = function (env) { 
-  const scale_factor = env.opts.min / Math.min(env.image.width, env.image.height); 
+reducer._calculate_size = function (env) {
+  const scale_factor = env.opts.min / Math.min(env.image.width, env.image.height);
 
-  if (scale_factor > 1) scale_factor = 1; 
+  if (scale_factor > 1) scale_factor = 1;
 
-  env.transform_width = Math.max(Math.round(env.image.width * scale_factor), 1); 
-  env.transform_height = Math.max(Math.round(env.image.height * scale_factor), 1); 
-}; 
+  env.transform_width = Math.max(Math.round(env.image.width * scale_factor), 1);
+  env.transform_height = Math.max(Math.round(env.image.height * scale_factor), 1);
+};
 ```
