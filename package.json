@@ -18,8 +18,11 @@
     "dist/"
   ],
   "exports": {
-    "import": "./dist/image-blob-reduce.esm.mjs",
-    "require": "./index.js"
+    "./package.json": "./package.json",
+    ".": {
+      "import": "./dist/image-blob-reduce.esm.mjs",
+      "require": "./index.js"
+    }
   },
   "module": "./dist/image-blob-reduce.esm.mjs",
   "scripts": {
