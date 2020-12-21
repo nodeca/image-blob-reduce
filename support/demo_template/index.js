@@ -1,6 +1,6 @@
 'use strict';
 
-var reducer = new (require('../../'))();
+var reducer = new (require('../../index.js'))();
 
 window.addEventListener('DOMContentLoaded', function () {
   document.getElementById('uploader').addEventListener('change', function () {
