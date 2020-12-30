@@ -1,5 +1,5 @@
 
-/*! image-blob-reduce 2.2.0 https://github.com/nodeca/image-blob-reduce @license MIT */
+/*! image-blob-reduce 2.2.1 https://github.com/nodeca/image-blob-reduce @license MIT */
 var assign = function assign(to) {
   var from;
 
