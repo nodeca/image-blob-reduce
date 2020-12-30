@@ -19,6 +19,7 @@
   ],
   "exports": {
     "./package.json": "./package.json",
+    "./lib/image_traverse.js": "./lib/image_traverse.js",
     ".": {
       "import": "./dist/image-blob-reduce.esm.mjs",
       "require": "./index.js"

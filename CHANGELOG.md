@@ -1,3 +1,9 @@
+2.2.1 / WIP
+------------------
+
+- Add lib/image-traverse to package.json exports.
+
+
 2.2.0 / 2020-12-18
 ------------------
 
