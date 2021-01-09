@@ -3,20 +3,21 @@ import commonjs from '@rollup/plugin-commonjs';
 import pkg from '../package.json';
 import { terser } from 'rollup-plugin-terser';
 
+
+const banner = {
+  banner() {
+    return `/*! ${pkg.name} ${pkg.version} https://github.com/${pkg.repository} @license ${pkg.license} */`;
+  }
+}
+
+const umd_out_base = { format: 'umd', name: 'ImageBlobReduce'/*, exports: 'named'*/ };
+
+
 export default {
   input: 'index.js',
   output: [
-    {
-      file: 'dist/image-blob-reduce.js',
-      format: 'umd',
-      name: 'ImageBlobReduce'
-    },
-    {
-      file: 'dist/image-blob-reduce.min.js',
-      format: 'umd',
-      name: 'ImageBlobReduce',
-      plugins: [ terser() ]
-    },
+    { ...umd_out_base, file: 'dist/image-blob-reduce.js' },
+    { ...umd_out_base, file: 'dist/image-blob-reduce.min.js', plugins: [ terser() ] },
     {
       file: 'dist/image-blob-reduce.esm.mjs',
       format: 'esm'
@@ -25,10 +26,6 @@ export default {
   plugins: [
     nodeResolve(),
     commonjs(),
-    {
-      banner() {
-        return `/*! ${pkg.name} ${pkg.version} https://github.com/${pkg.repository} @license ${pkg.license} */`;
-      }
-    }
+    banner
   ]
 };
