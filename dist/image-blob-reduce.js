@@ -1,5 +1,5 @@
 
-/*! image-blob-reduce 2.2.1 https://github.com/nodeca/image-blob-reduce @license MIT */
+/*! image-blob-reduce 2.2.2 https://github.com/nodeca/image-blob-reduce @license MIT */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -52,21 +52,15 @@
   	pick_pica_resize_options: pick_pica_resize_options_1
   };
 
-  function createCommonjsModule(fn, basedir, module) {
-  	return module = {
-  		path: basedir,
-  		exports: {},
-  		require: function (path, base) {
-  			return commonjsRequire(path, (base === undefined || base === null) ? module.path : base);
-  		}
-  	}, fn(module, module.exports), module.exports;
+  function createCommonjsModule(fn) {
+    var module = { exports: {} };
+  	return fn(module, module.exports), module.exports;
   }
 
-  function commonjsRequire () {
-  	throw new Error('Dynamic requires are not currently supported by @rollup/plugin-commonjs');
+  function commonjsRequire (target) {
+  	throw new Error('Could not dynamically require "' + target + '". Please configure the dynamicRequireTargets option of @rollup/plugin-commonjs appropriately for this require call to behave properly.');
   }
 
-  var pica = createCommonjsModule(function (module, exports) {
   /*!
 
   pica
@@ -74,6 +68,7 @@
 
   */
 
+  var pica = createCommonjsModule(function (module, exports) {
   (function(f){{module.exports=f();}})(function(){return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof commonjsRequire&&commonjsRequire;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t);}return n[i].exports}for(var u="function"==typeof commonjsRequire&&commonjsRequire,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(_dereq_,module,exports){
 
   var inherits = _dereq_('inherits');
@@ -3124,7 +3119,7 @@
 
     options = options || {};
 
-    this.pica = options.pica || pica();
+    this.pica = options.pica || pica({});
     this.initialized = false;
 
     this.utils = utils;
