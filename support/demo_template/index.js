@@ -1,6 +1,8 @@
 'use strict';
 
-var reducer = new (require('../../index.js'))();
+var reducer = new window.ImageBlobReduce({
+  pica: window.ImageBlobReduce.pica({ features: [ 'js', 'wasm', 'ww' ] })
+});
 
 window.addEventListener('DOMContentLoaded', function () {
   document.getElementById('uploader').addEventListener('change', function () {

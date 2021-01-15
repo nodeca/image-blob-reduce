@@ -1,14 +1,15 @@
 
 'use strict';
 
-var utils        = require('./lib/utils');
+var utils = require('./lib/utils');
+var pica  = require('pica');
 
 function ImageBlobReduce(options) {
   if (!(this instanceof ImageBlobReduce)) return new ImageBlobReduce(options);
 
   options = options || {};
 
-  this.pica = options.pica || require('pica')();
+  this.pica = options.pica || pica({});
   this.initialized = false;
 
   this.utils = utils;
@@ -209,6 +210,6 @@ ImageBlobReduce.prototype._getUint8Array = function (blob) {
 };
 
 
-ImageBlobReduce.pica = require('pica');
+ImageBlobReduce.pica = pica;
 
 module.exports = ImageBlobReduce;

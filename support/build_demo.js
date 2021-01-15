@@ -9,5 +9,6 @@ var shell = require('shelljs');
 shell.rm('-rf', 'demo');
 shell.mkdir('demo');
 
+shell.cp('dist/image-blob-reduce.min.js', 'demo/image-blob-reduce.js');
 shell.cp('support/demo_template/index.html', 'demo/index.html');
 shell.exec('node_modules/.bin/rollup -c support/demo_template/rollup.config.js');

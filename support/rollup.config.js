@@ -17,7 +17,9 @@ export default {
   input: 'index.js',
   output: [
     { ...umd_out_base, file: 'dist/image-blob-reduce.js' },
-    { ...umd_out_base, file: 'dist/image-blob-reduce.min.js', plugins: [ terser() ] },
+    { ...umd_out_base, file: 'dist/image-blob-reduce.min.js', plugins: [ terser({
+      compress: { evaluate: false },
+    }) ] },
     {
       file: 'dist/image-blob-reduce.esm.mjs',
       format: 'esm'
