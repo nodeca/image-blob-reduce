@@ -149,5 +149,7 @@ reducer._calculate_size = function (env) {
 
   env.transform_width = Math.max(Math.round(env.image.width * scale_factor), 1);
   env.transform_height = Math.max(Math.round(env.image.height * scale_factor), 1);
+  
+  return env;
 };
 ```
