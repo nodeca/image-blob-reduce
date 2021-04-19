@@ -1,10 +1,11 @@
 
 'use strict';
 
-const assert = require('assert');
-const fs     = require('fs');
-const path   = require('path');
-const resize = require('../')();
+const assert         = require('assert');
+const fs             = require('fs');
+const path           = require('path');
+const resize         = require('../')();
+const image_traverse = require('../lib/image_traverse');
 
 
 describe('Browser', function () {
@@ -37,5 +38,31 @@ describe('Browser', function () {
     let out    = await resize.toBlob(blob, { max: 10 });
 
     assert.strictEqual(out.type, 'image/jpeg');
+  });
+
+  it('should keep exif in output', async function () {
+    let image    = fs.readFileSync(path.join(__dirname, 'test.jpg'));
+    let blob     = new Blob([ image ], { type: 'image/jpeg' });
+    let blob_out = await resize.toBlob(blob);
+    let buf      = new Uint8Array(await blob_out.arrayBuffer());
+
+    assert(blob.size !== blob_out.size, 'blob sizes should differ');
+
+    let old_string, old_orientation, new_string, new_orientation;
+
+    image_traverse.jpeg_exif_tags_each(image, entry => {
+      if (entry.ifd === 0 && entry.tag === 0x110) old_string = entry.value;
+      if (entry.ifd === 0 && entry.tag === 0x112) old_orientation = entry.value;
+    });
+
+    image_traverse.jpeg_exif_tags_each(buf, entry => {
+      if (entry.ifd === 0 && entry.tag === 0x110) new_string = entry.value;
+      if (entry.ifd === 0 && entry.tag === 0x112) new_orientation = entry.value;
+    });
+
+    assert.deepStrictEqual(old_string, 'image_blob_reduce test');
+    assert.deepStrictEqual(new_string, 'image_blob_reduce test');
+    assert.deepStrictEqual(old_orientation, [ 6 ]);
+    assert.deepStrictEqual(new_orientation, [ 1 ]);
   });
 });
