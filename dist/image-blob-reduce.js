@@ -1,12 +1,12 @@
 
-/*! image-blob-reduce 2.2.2 https://github.com/nodeca/image-blob-reduce @license MIT */
+/*! image-blob-reduce 2.2.3 https://github.com/nodeca/image-blob-reduce @license MIT */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.ImageBlobReduce = factory());
 }(this, (function () { 'use strict';
 
-  var assign = function assign(to) {
+  var assign$1 = function assign(to) {
     var from;
 
     for (var s = 1; s < arguments.length; s++) {
@@ -47,7 +47,7 @@
   var pick_pica_resize_options_1 = pick_pica_resize_options;
 
   var utils = {
-  	assign: assign,
+  	assign: assign$1,
   	pick: pick_1,
   	pick_pica_resize_options: pick_pica_resize_options_1
   };
@@ -2979,7 +2979,7 @@
         image_traverse.jpeg_exif_tags_each(data, function (entry) {
           if (entry.ifd === 0 && entry.tag === 0x112 && Array.isArray(entry.value)) {
             env.orientation    = entry.value[0] || 1;
-            exif_is_big_endian = entry.big_endian;
+            exif_is_big_endian = entry.is_big_endian;
             orientation_offset = entry.data_offset;
             return false;
           }
@@ -3048,7 +3048,7 @@
       var data = res[0];
       var data_out = res[1];
 
-      if (image_traverse.is_jpeg(data_out)) return Promise.resolve(env);
+      if (!image_traverse.is_jpeg(data)) return Promise.resolve(env);
 
       var segments = [];
 
@@ -3059,12 +3059,9 @@
 
       segments = segments
         .filter(function (segment) {
-          if (segment.code === 0xE2) {
-            var hdr = data.slice(segment.offset + 4, segment.offset + 11);
-            if (String.fromCharCode.apply(hdr) === 'ICC_PROFILE') {
-              return false;
-            }
-          }
+          // Drop ICC_PROFILE
+          //
+          if (segment.code === 0xE2) return false;
 
           // Keep all APPn segments excluding APP2 (ICC_PROFILE),
           // remove others because most of them depend on image data (DCT and such).
@@ -3085,8 +3082,9 @@
           return data.slice(segment.offset, segment.offset + segment.length);
         });
 
-      env.blob = new Blob(
-        [ data.slice(0, 20) ].concat(segments).concat([ data.slice(20) ]),
+      env.out_blob = new Blob(
+        // intentionally omitting expected JFIF segment (offset 2 to 20)
+        [ data_out.slice(0, 2) ].concat(segments).concat([ data_out.slice(20) ]),
         { type: 'image/jpeg' }
       );
 
@@ -3095,7 +3093,7 @@
   }
 
 
-  function assign$1(reducer) {
+  function assign(reducer) {
     reducer.before('_blob_to_image', jpeg_patch_exif);
     reducer.after('_transform',      jpeg_rotate_canvas);
     reducer.after('_create_blob',    jpeg_attach_orig_segments);
@@ -3105,7 +3103,7 @@
   var jpeg_patch_exif_1 = jpeg_patch_exif;
   var jpeg_rotate_canvas_1 = jpeg_rotate_canvas;
   var jpeg_attach_orig_segments_1 = jpeg_attach_orig_segments;
-  var assign_1 = assign$1;
+  var assign_1 = assign;
 
   var jpeg_plugins = {
   	jpeg_patch_exif: jpeg_patch_exif_1,
