@@ -1,4 +1,4 @@
-2.2.3 / WIP
+2.2.3 / 2021-04-19
 ------------------
 
 - Original Exif is now appended to resized JPEG image, #26.
