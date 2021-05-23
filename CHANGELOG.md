@@ -1,3 +1,9 @@
+3.0.0 / WIP
+------------------
+
+- Bumped `pica` to v7.0.0. See pica docs for unsharp mask & options change.
+
+
 2.2.3 / 2021-04-19
 ------------------
 
