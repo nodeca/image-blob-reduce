@@ -1,3 +1,10 @@
+3.0.1 / 2021-06-17
+------------------
+
+- Bumped `pica` to v7.1.0.
+- Return error when canvas data read blocked by fingerprint protection, #28.
+
+
 3.0.0 / 2021-05-23
 ------------------
 

@@ -1,6 +1,6 @@
 {
   "name": "image-blob-reduce",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "High quality image resize in browser for blobs (`pica` wrapper with some sugar)",
   "keywords": [
     "resize",
@@ -37,7 +37,7 @@
     "prepublishOnly": "npm run gh-pages"
   },
   "dependencies": {
-    "pica": "^7.0.0"
+    "pica": "^7.1.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",
