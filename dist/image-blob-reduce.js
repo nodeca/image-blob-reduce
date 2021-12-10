@@ -1,5 +1,5 @@
 
-/*! image-blob-reduce 4.0.0 https://github.com/nodeca/image-blob-reduce @license MIT */
+/*! image-blob-reduce 4.1.0 https://github.com/nodeca/image-blob-reduce @license MIT */
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
 	typeof define === 'function' && define.amd ? define(factory) :
@@ -64,8 +64,6 @@
 	(function (module, exports) {
 	(function(f){{module.exports=f();}})(function(){return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof commonjsRequire&&commonjsRequire;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t);}return n[i].exports}for(var u="function"==typeof commonjsRequire&&commonjsRequire,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(_dereq_,module,exports){
 
-	var inherits = _dereq_('inherits');
-
 	var Multimath = _dereq_('multimath');
 
 	var mm_unsharp_mask = _dereq_('./mm_unsharp_mask');
@@ -88,7 +86,8 @@
 	  this.use(mm_resize);
 	}
 
-	inherits(MathLib, Multimath);
+	MathLib.prototype = Object.create(Multimath.prototype);
+	MathLib.prototype.constructor = MathLib;
 
 	MathLib.prototype.resizeAndUnsharp = function resizeAndUnsharp(options, cache) {
 	  var result = this.resize(options, cache);
@@ -102,23 +101,28 @@
 
 	module.exports = MathLib;
 
-	},{"./mm_resize":4,"./mm_unsharp_mask":9,"inherits":19,"multimath":20}],2:[function(_dereq_,module,exports){
+	},{"./mm_resize":4,"./mm_unsharp_mask":9,"multimath":19}],2:[function(_dereq_,module,exports){
 	//var FIXED_FRAC_BITS = 14;
 
 	function clampTo8(i) {
 	  return i < 0 ? 0 : i > 255 ? 255 : i;
-	} // Convolve image in horizontal directions and transpose output. In theory,
-	// transpose allow:
+	}
+
+	function clampNegative(i) {
+	  return i >= 0 ? i : 0;
+	} // Convolve image data in horizontal direction. Can be used for:
 	//
-	// - use the same convolver for both passes (this fails due different
-	//   types of input array and temporary buffer)
-	// - making vertical pass by horisonltal lines inprove CPU cache use.
+	// 1. bitmap with premultiplied alpha
+	// 2. bitmap without alpha (all values 255)
 	//
-	// But in real life this doesn't work :)
+	// Notes:
+	//
+	// - output is transposed
+	// - output resolution is ~15 bits per channel(for better precision).
 	//
 
 
-	function convolveHorizontally(src, dest, srcW, srcH, destW, filters) {
+	function convolveHor(src, dest, srcW, srcH, destW, filters) {
 	  var r, g, b, a;
 	  var filterPtr, filterShift, filterSize;
 	  var srcPtr, srcY, destX, filterVal;
@@ -144,39 +148,26 @@
 	        g = g + filterVal * src[srcPtr + 1] | 0;
 	        r = r + filterVal * src[srcPtr] | 0;
 	        srcPtr = srcPtr + 4 | 0;
-	      } // Bring this value back in range. All of the filter scaling factors
-	      // are in fixed point with FIXED_FRAC_BITS bits of fractional part.
-	      //
-	      // (!) Add 1/2 of value before clamping to get proper rounding. In other
-	      // case brightness loss will be noticeable if you resize image with white
-	      // border and place it on white background.
+	      } // Store 15 bits between passes for better precision
+	      // Instead of shift to 14 (FIXED_FRAC_BITS), shift to 7 only
 	      //
 
 
-	      dest[destOffset + 3] = clampTo8(a + (1 << 13) >> 14
-	      /*FIXED_FRAC_BITS*/
-	      );
-	      dest[destOffset + 2] = clampTo8(b + (1 << 13) >> 14
-	      /*FIXED_FRAC_BITS*/
-	      );
-	      dest[destOffset + 1] = clampTo8(g + (1 << 13) >> 14
-	      /*FIXED_FRAC_BITS*/
-	      );
-	      dest[destOffset] = clampTo8(r + (1 << 13) >> 14
-	      /*FIXED_FRAC_BITS*/
-	      );
+	      dest[destOffset + 3] = clampNegative(a >> 7);
+	      dest[destOffset + 2] = clampNegative(b >> 7);
+	      dest[destOffset + 1] = clampNegative(g >> 7);
+	      dest[destOffset] = clampNegative(r >> 7);
 	      destOffset = destOffset + srcH * 4 | 0;
 	    }
 
 	    destOffset = (srcY + 1) * 4 | 0;
 	    srcOffset = (srcY + 1) * srcW * 4 | 0;
 	  }
-	} // Technically, convolvers are the same. But input array and temporary
-	// buffer can be of different type (especially, in old browsers). So,
-	// keep code in separate functions to avoid deoptimizations & speed loss.
+	} // Supplementary method for `convolveHor()`
+	//
 
 
-	function convolveVertically(src, dest, srcW, srcH, destW, filters) {
+	function convolveVert(src, dest, srcW, srcH, destW, filters) {
 	  var r, g, b, a;
 	  var filterPtr, filterShift, filterSize;
 	  var srcPtr, srcY, destX, filterVal;
@@ -202,27 +193,134 @@
 	        g = g + filterVal * src[srcPtr + 1] | 0;
 	        r = r + filterVal * src[srcPtr] | 0;
 	        srcPtr = srcPtr + 4 | 0;
-	      } // Bring this value back in range. All of the filter scaling factors
-	      // are in fixed point with FIXED_FRAC_BITS bits of fractional part.
+	      } // Sync with premultiplied version for exact result match
+
+
+	      r >>= 7;
+	      g >>= 7;
+	      b >>= 7;
+	      a >>= 7; // Bring this value back in range + round result.
 	      //
-	      // (!) Add 1/2 of value before clamping to get proper rounding. In other
-	      // case brightness loss will be noticeable if you resize image with white
-	      // border and place it on white background.
+
+	      dest[destOffset + 3] = clampTo8(a + (1 << 13) >> 14);
+	      dest[destOffset + 2] = clampTo8(b + (1 << 13) >> 14);
+	      dest[destOffset + 1] = clampTo8(g + (1 << 13) >> 14);
+	      dest[destOffset] = clampTo8(r + (1 << 13) >> 14);
+	      destOffset = destOffset + srcH * 4 | 0;
+	    }
+
+	    destOffset = (srcY + 1) * 4 | 0;
+	    srcOffset = (srcY + 1) * srcW * 4 | 0;
+	  }
+	} // Premultiply & convolve image data in horizontal direction. Can be used for:
+	//
+	// - Any bitmap data, extracted with `.getImageData()` method (with
+	//   non-premultiplied alpha)
+	//
+	// For images without alpha channel this method is slower than `convolveHor()`
+	//
+
+
+	function convolveHorWithPre(src, dest, srcW, srcH, destW, filters) {
+	  var r, g, b, a, alpha;
+	  var filterPtr, filterShift, filterSize;
+	  var srcPtr, srcY, destX, filterVal;
+	  var srcOffset = 0,
+	      destOffset = 0; // For each row
+
+	  for (srcY = 0; srcY < srcH; srcY++) {
+	    filterPtr = 0; // Apply precomputed filters to each destination row point
+
+	    for (destX = 0; destX < destW; destX++) {
+	      // Get the filter that determines the current output pixel.
+	      filterShift = filters[filterPtr++];
+	      filterSize = filters[filterPtr++];
+	      srcPtr = srcOffset + filterShift * 4 | 0;
+	      r = g = b = a = 0; // Apply the filter to the row to get the destination pixel r, g, b, a
+
+	      for (; filterSize > 0; filterSize--) {
+	        filterVal = filters[filterPtr++]; // Use reverse order to workaround deopts in old v8 (node v.10)
+	        // Big thanks to @mraleph (Vyacheslav Egorov) for the tip.
+
+	        alpha = src[srcPtr + 3];
+	        a = a + filterVal * alpha | 0;
+	        b = b + filterVal * src[srcPtr + 2] * alpha | 0;
+	        g = g + filterVal * src[srcPtr + 1] * alpha | 0;
+	        r = r + filterVal * src[srcPtr] * alpha | 0;
+	        srcPtr = srcPtr + 4 | 0;
+	      } // Premultiply is (* alpha / 255).
+	      // Postpone division for better performance
+
+
+	      b = b / 255 | 0;
+	      g = g / 255 | 0;
+	      r = r / 255 | 0; // Store 15 bits between passes for better precision
+	      // Instead of shift to 14 (FIXED_FRAC_BITS), shift to 7 only
+	      //
+
+	      dest[destOffset + 3] = clampNegative(a >> 7);
+	      dest[destOffset + 2] = clampNegative(b >> 7);
+	      dest[destOffset + 1] = clampNegative(g >> 7);
+	      dest[destOffset] = clampNegative(r >> 7);
+	      destOffset = destOffset + srcH * 4 | 0;
+	    }
+
+	    destOffset = (srcY + 1) * 4 | 0;
+	    srcOffset = (srcY + 1) * srcW * 4 | 0;
+	  }
+	} // Supplementary method for `convolveHorWithPre()`
+	//
+
+
+	function convolveVertWithPre(src, dest, srcW, srcH, destW, filters) {
+	  var r, g, b, a;
+	  var filterPtr, filterShift, filterSize;
+	  var srcPtr, srcY, destX, filterVal;
+	  var srcOffset = 0,
+	      destOffset = 0; // For each row
+
+	  for (srcY = 0; srcY < srcH; srcY++) {
+	    filterPtr = 0; // Apply precomputed filters to each destination row point
+
+	    for (destX = 0; destX < destW; destX++) {
+	      // Get the filter that determines the current output pixel.
+	      filterShift = filters[filterPtr++];
+	      filterSize = filters[filterPtr++];
+	      srcPtr = srcOffset + filterShift * 4 | 0;
+	      r = g = b = a = 0; // Apply the filter to the row to get the destination pixel r, g, b, a
+
+	      for (; filterSize > 0; filterSize--) {
+	        filterVal = filters[filterPtr++]; // Use reverse order to workaround deopts in old v8 (node v.10)
+	        // Big thanks to @mraleph (Vyacheslav Egorov) for the tip.
+
+	        a = a + filterVal * src[srcPtr + 3] | 0;
+	        b = b + filterVal * src[srcPtr + 2] | 0;
+	        g = g + filterVal * src[srcPtr + 1] | 0;
+	        r = r + filterVal * src[srcPtr] | 0;
+	        srcPtr = srcPtr + 4 | 0;
+	      } // Downscale to leave room for un-premultiply
+
+
+	      r >>= 7;
+	      g >>= 7;
+	      b >>= 7;
+	      a >>= 7; // Un-premultiply
+
+	      a = clampTo8(a + (1 << 13) >> 14);
+
+	      if (a > 0) {
+	        r = r * 255 / a | 0;
+	        g = g * 255 / a | 0;
+	        b = b * 255 / a | 0;
+	      } // Bring this value back in range + round result.
+	      // Shift value = FIXED_FRAC_BITS + 7
 	      //
 
 
-	      dest[destOffset + 3] = clampTo8(a + (1 << 13) >> 14
-	      /*FIXED_FRAC_BITS*/
-	      );
-	      dest[destOffset + 2] = clampTo8(b + (1 << 13) >> 14
-	      /*FIXED_FRAC_BITS*/
-	      );
-	      dest[destOffset + 1] = clampTo8(g + (1 << 13) >> 14
-	      /*FIXED_FRAC_BITS*/
-	      );
-	      dest[destOffset] = clampTo8(r + (1 << 13) >> 14
-	      /*FIXED_FRAC_BITS*/
-	      );
+	      dest[destOffset + 3] = a;
+	      dest[destOffset + 2] = clampTo8(b + (1 << 13) >> 14);
+	      dest[destOffset + 1] = clampTo8(g + (1 << 13) >> 14);
+	      dest[destOffset] = clampTo8(r + (1 << 13) >> 14);
 	      destOffset = destOffset + srcH * 4 | 0;
 	    }
 
@@ -232,14 +330,16 @@
 	}
 
 	module.exports = {
-	  convolveHorizontally: convolveHorizontally,
-	  convolveVertically: convolveVertically
+	  convolveHor: convolveHor,
+	  convolveVert: convolveVert,
+	  convolveHorWithPre: convolveHorWithPre,
+	  convolveVertWithPre: convolveVertWithPre
 	};
 
 	},{}],3:[function(_dereq_,module,exports){
 	/* eslint-disable max-len */
 
-	module.exports = 'AGFzbQEAAAAADAZkeWxpbmsAAAAAAAEXA2AAAGAGf39/f39/AGAHf39/f39/fwACDwEDZW52Bm1lbW9yeQIAAAMEAwABAgYGAX8AQQALB1cFEV9fd2FzbV9jYWxsX2N0b3JzAAAIY29udm9sdmUAAQpjb252b2x2ZUhWAAIMX19kc29faGFuZGxlAwAYX193YXNtX2FwcGx5X2RhdGFfcmVsb2NzAAAK7AMDAwABC8YDAQ9/AkAgA0UNACAERQ0AA0AgDCENQQAhE0EAIQcDQCAHQQJqIQYCfyAHQQF0IAVqIgcuAQIiFEUEQEGAwAAhCEGAwAAhCUGAwAAhCkGAwAAhCyAGDAELIBIgBy4BAGohCEEAIQsgFCEHQQAhDiAGIQlBACEPQQAhEANAIAUgCUEBdGouAQAiESAAIAhBAnRqKAIAIgpBGHZsIBBqIRAgCkH/AXEgEWwgC2ohCyAKQRB2Qf8BcSARbCAPaiEPIApBCHZB/wFxIBFsIA5qIQ4gCEEBaiEIIAlBAWohCSAHQQFrIgcNAAsgC0GAQGshCCAOQYBAayEJIA9BgEBrIQogEEGAQGshCyAGIBRqCyEHIAEgDUECdGogCUEOdSIGQf8BIAZB/wFIGyIGQQAgBkEAShtBCHRBgP4DcSAKQQ51IgZB/wEgBkH/AUgbIgZBACAGQQBKG0EQdEGAgPwHcSALQQ51IgZB/wEgBkH/AUgbIgZBACAGQQBKG0EYdHJyIAhBDnUiBkH/ASAGQf8BSBsiBkEAIAZBAEobcjYCACADIA1qIQ0gE0EBaiITIARHDQALIAxBAWoiDCACbCESIAMgDEcNAAsLCx4AQQAgAiADIAQgBSAAEAEgAkEAIAQgBSAGIAEQAQs=';
+	module.exports = 'AGFzbQEAAAAADAZkeWxpbmsAAAAAAAEYA2AGf39/f39/AGAAAGAIf39/f39/f38AAg8BA2VudgZtZW1vcnkCAAADBwYBAAAAAAIGBgF/AEEACweUAQgRX193YXNtX2NhbGxfY3RvcnMAAAtjb252b2x2ZUhvcgABDGNvbnZvbHZlVmVydAACEmNvbnZvbHZlSG9yV2l0aFByZQADE2NvbnZvbHZlVmVydFdpdGhQcmUABApjb252b2x2ZUhWAAUMX19kc29faGFuZGxlAwAYX193YXNtX2FwcGx5X2RhdGFfcmVsb2NzAAAKyA4GAwABC4wDARB/AkAgA0UNACAERQ0AIANBAnQhFQNAQQAhE0EAIQsDQCALQQJqIQcCfyALQQF0IAVqIgYuAQIiC0UEQEEAIQhBACEGQQAhCUEAIQogBwwBCyASIAYuAQBqIQhBACEJQQAhCiALIRRBACEOIAchBkEAIQ8DQCAFIAZBAXRqLgEAIhAgACAIQQJ0aigCACIRQRh2bCAPaiEPIBFB/wFxIBBsIAlqIQkgEUEQdkH/AXEgEGwgDmohDiARQQh2Qf8BcSAQbCAKaiEKIAhBAWohCCAGQQFqIQYgFEEBayIUDQALIAlBB3UhCCAKQQd1IQYgDkEHdSEJIA9BB3UhCiAHIAtqCyELIAEgDEEBdCIHaiAIQQAgCEEAShs7AQAgASAHQQJyaiAGQQAgBkEAShs7AQAgASAHQQRyaiAJQQAgCUEAShs7AQAgASAHQQZyaiAKQQAgCkEAShs7AQAgDCAVaiEMIBNBAWoiEyAERw0ACyANQQFqIg0gAmwhEiANQQJ0IQwgAyANRw0ACwsL2gMBD38CQCADRQ0AIARFDQAgAkECdCEUA0AgCyEMQQAhE0EAIQIDQCACQQJqIQYCfyACQQF0IAVqIgcuAQIiAkUEQEEAIQhBACEHQQAhCkEAIQkgBgwBCyAHLgEAQQJ0IBJqIQhBACEJIAIhCkEAIQ0gBiEHQQAhDkEAIQ8DQCAFIAdBAXRqLgEAIhAgACAIQQF0IhFqLwEAbCAJaiEJIAAgEUEGcmovAQAgEGwgDmohDiAAIBFBBHJqLwEAIBBsIA9qIQ8gACARQQJyai8BACAQbCANaiENIAhBBGohCCAHQQFqIQcgCkEBayIKDQALIAlBB3UhCCANQQd1IQcgDkEHdSEKIA9BB3UhCSACIAZqCyECIAEgDEECdGogB0GAQGtBDnUiBkH/ASAGQf8BSBsiBkEAIAZBAEobQQh0QYD+A3EgCUGAQGtBDnUiBkH/ASAGQf8BSBsiBkEAIAZBAEobQRB0QYCA/AdxIApBgEBrQQ51IgZB/wEgBkH/AUgbIgZBACAGQQBKG0EYdHJyIAhBgEBrQQ51IgZB/wEgBkH/AUgbIgZBACAGQQBKG3I2AgAgAyAMaiEMIBNBAWoiEyAERw0ACyAUIAtBAWoiC2whEiADIAtHDQALCwuSAwEQfwJAIANFDQAgBEUNACADQQJ0IRUDQEEAIRNBACEGA0AgBkECaiEIAn8gBkEBdCAFaiIGLgECIgdFBEBBACEJQQAhDEEAIQ1BACEOIAgMAQsgEiAGLgEAaiEJQQAhDkEAIQ1BACEMIAchFEEAIQ8gCCEGA0AgBSAGQQF0ai4BACAAIAlBAnRqKAIAIhBBGHZsIhEgD2ohDyARIBBBEHZB/wFxbCAMaiEMIBEgEEEIdkH/AXFsIA1qIQ0gESAQQf8BcWwgDmohDiAJQQFqIQkgBkEBaiEGIBRBAWsiFA0ACyAPQQd1IQkgByAIagshBiABIApBAXQiCGogDkH/AW1BB3UiB0EAIAdBAEobOwEAIAEgCEECcmogDUH/AW1BB3UiB0EAIAdBAEobOwEAIAEgCEEEcmogDEH/AW1BB3UiB0EAIAdBAEobOwEAIAEgCEEGcmogCUEAIAlBAEobOwEAIAogFWohCiATQQFqIhMgBEcNAAsgC0EBaiILIAJsIRIgC0ECdCEKIAMgC0cNAAsLC4IEAQ9/AkAgA0UNACAERQ0AIAJBAnQhFANAIAshDEEAIRJBACEHA0AgB0ECaiEKAn8gB0EBdCAFaiICLgECIhNFBEBBACEIQQAhCUEAIQYgCiEHQQAMAQsgAi4BAEECdCARaiEJQQAhByATIQJBACENIAohBkEAIQ5BACEPA0AgBSAGQQF0ai4BACIIIAAgCUEBdCIQai8BAGwgB2ohByAAIBBBBnJqLwEAIAhsIA5qIQ4gACAQQQRyai8BACAIbCAPaiEPIAAgEEECcmovAQAgCGwgDWohDSAJQQRqIQkgBkEBaiEGIAJBAWsiAg0ACyAHQQd1IQggDUEHdSEJIA9BB3UhBiAKIBNqIQcgDkEHdQtBgEBrQQ51IgJB/wEgAkH/AUgbIgJBACACQQBKGyIKQf8BcQRAIAlB/wFsIAJtIQkgCEH/AWwgAm0hCCAGQf8BbCACbSEGCyABIAxBAnRqIAlBgEBrQQ51IgJB/wEgAkH/AUgbIgJBACACQQBKG0EIdEGA/gNxIAZBgEBrQQ51IgJB/wEgAkH/AUgbIgJBACACQQBKG0EQdEGAgPwHcSAKQRh0ciAIQYBAa0EOdSICQf8BIAJB/wFIGyICQQAgAkEAShtycjYCACADIAxqIQwgEkEBaiISIARHDQALIBQgC0EBaiILbCERIAMgC0cNAAsLC0AAIAcEQEEAIAIgAyAEIAUgABADIAJBACAEIAUgBiABEAQPC0EAIAIgAyAEIAUgABABIAJBACAEIAUgBiABEAIL';
 
 	},{}],4:[function(_dereq_,module,exports){
 
@@ -254,9 +354,23 @@
 
 	var createFilters = _dereq_('./resize_filter_gen');
 
-	var convolveHorizontally = _dereq_('./convolve').convolveHorizontally;
+	var _require = _dereq_('./convolve'),
+	    convolveHor = _require.convolveHor,
+	    convolveVert = _require.convolveVert,
+	    convolveHorWithPre = _require.convolveHorWithPre,
+	    convolveVertWithPre = _require.convolveVertWithPre;
 
-	var convolveVertically = _dereq_('./convolve').convolveVertically;
+	function hasAlpha(src, width, height) {
+	  var ptr = 3,
+	      len = width * height * 4 | 0;
+
+	  while (ptr < len) {
+	    if (src[ptr] !== 255) return true;
+	    ptr = ptr + 4 | 0;
+	  }
+
+	  return false;
+	}
 
 	function resetAlpha(dst, width, height) {
 	  var ptr = 3,
@@ -279,20 +393,20 @@
 	  var offsetX = options.offsetX || 0;
 	  var offsetY = options.offsetY || 0;
 	  var dest = options.dest || new Uint8Array(destW * destH * 4);
-	  var alpha = options.alpha || false;
 	  var filter = typeof options.filter === 'undefined' ? 'mks2013' : options.filter;
 	  var filtersX = createFilters(filter, srcW, destW, scaleX, offsetX),
 	      filtersY = createFilters(filter, srcH, destH, scaleY, offsetY);
-	  var tmp = new Uint8Array(destW * srcH * 4); // To use single function we need src & tmp of the same type.
-	  // But src can be CanvasPixelArray, and tmp - Uint8Array. So, keep
-	  // vertical and horizontal passes separately to avoid deoptimization.
+	  var tmp = new Uint16Array(destW * srcH * 4); // Autodetect if alpha channel exists, and use appropriate method
 
-	  convolveHorizontally(src, tmp, srcW, srcH, destW, filtersX);
-	  convolveVertically(tmp, dest, srcH, destW, destH, filtersY); // That's faster than doing checks in convolver.
-	  // !!! Note, canvas data is not premultipled. We don't need other
-	  // alpha corrections.
+	  if (hasAlpha(src, srcW, srcH)) {
+	    convolveHorWithPre(src, tmp, srcW, srcH, destW, filtersX);
+	    convolveVertWithPre(tmp, dest, srcH, destW, destH, filtersY);
+	  } else {
+	    convolveHor(src, tmp, srcW, srcH, destW, filtersX);
+	    convolveVert(tmp, dest, srcH, destW, destH, filtersY);
+	    resetAlpha(dest, destW, destH);
+	  }
 
-	  if (!alpha) resetAlpha(dest, destW, destH);
 	  return dest;
 	};
 
@@ -499,6 +613,18 @@
 
 	var createFilters = _dereq_('./resize_filter_gen');
 
+	function hasAlpha(src, width, height) {
+	  var ptr = 3,
+	      len = width * height * 4 | 0;
+
+	  while (ptr < len) {
+	    if (src[ptr] !== 255) return true;
+	    ptr = ptr + 4 | 0;
+	  }
+
+	  return false;
+	}
+
 	function resetAlpha(dst, width, height) {
 	  var ptr = 3,
 	      len = width * height * 4 | 0;
@@ -543,16 +669,18 @@
 	  var offsetX = options.offsetX || 0.0;
 	  var offsetY = options.offsetY || 0.0;
 	  var dest = options.dest || new Uint8Array(destW * destH * 4);
-	  var alpha = options.alpha || false;
 	  var filter = typeof options.filter === 'undefined' ? 'mks2013' : options.filter;
 	  var filtersX = createFilters(filter, srcW, destW, scaleX, offsetX),
 	      filtersY = createFilters(filter, srcH, destH, scaleY, offsetY); // destination is 0 too.
 
-	  var src_offset = 0; // buffer between convolve passes
+	  var src_offset = 0;
+	  var src_size = Math.max(src.byteLength, dest.byteLength); // buffer between convolve passes
 
-	  var tmp_offset = this.__align(src_offset + Math.max(src.byteLength, dest.byteLength));
+	  var tmp_offset = this.__align(src_offset + src_size);
 
-	  var filtersX_offset = this.__align(tmp_offset + srcH * destW * 4);
+	  var tmp_size = srcH * destW * 4 * 2; // 2 bytes per channel
+
+	  var filtersX_offset = this.__align(tmp_offset + tmp_size);
 
 	  var filtersY_offset = this.__align(filtersX_offset + filtersX.byteLength);
 
@@ -571,22 +699,24 @@
 	  // speed difference is not significant vs direct .set()
 
 	  copyInt16asLE(filtersX, mem, filtersX_offset);
-	  copyInt16asLE(filtersY, mem, filtersY_offset); //
-	  // Now call webassembly method
+	  copyInt16asLE(filtersY, mem, filtersY_offset); // Now call webassembly method
 	  // emsdk does method names with '_'
 
 	  var fn = instance.exports.convolveHV || instance.exports._convolveHV;
-	  fn(filtersX_offset, filtersY_offset, tmp_offset, srcW, srcH, destW, destH); //
+
+	  if (hasAlpha(src, srcW, srcH)) {
+	    fn(filtersX_offset, filtersY_offset, tmp_offset, srcW, srcH, destW, destH, 1);
+	  } else {
+	    fn(filtersX_offset, filtersY_offset, tmp_offset, srcW, srcH, destW, destH, 0);
+	    resetAlpha(dest, destW, destH);
+	  } //
 	  // Copy data back to typed array
 	  //
 	  // 32-bit copy is much faster in chrome
 
-	  var dest32 = new Uint32Array(dest.buffer);
-	  dest32.set(new Uint32Array(this.__memory.buffer, 0, destH * destW)); // That's faster than doing checks in convolver.
-	  // !!! Note, canvas data is not premultipled. We don't need other
-	  // alpha corrections.
 
-	  if (!alpha) resetAlpha(dest, destW, destH);
+	  var dest32 = new Uint32Array(dest.buffer);
+	  dest32.set(new Uint32Array(this.__memory.buffer, 0, destH * destW));
 	  return dest;
 	};
 
@@ -1137,9 +1267,7 @@
 
 	    if (!tileOpts.src && tileOpts.srcBitmap) {
 	      var canvas = new OffscreenCanvas(tileOpts.width, tileOpts.height);
-	      var ctx = canvas.getContext('2d', {
-	        alpha: Boolean(tileOpts.alpha)
-	      });
+	      var ctx = canvas.getContext('2d');
 	      ctx.drawImage(tileOpts.srcBitmap, 0, 0);
 	      tileOpts.src = ctx.getImageData(0, 0, tileOpts.width, tileOpts.height).data;
 	      canvas.width = canvas.height = 0;
@@ -1285,35 +1413,6 @@
 	module.exports = blurMono16;
 
 	},{}],19:[function(_dereq_,module,exports){
-	if (typeof Object.create === 'function') {
-	  // implementation from standard node.js 'util' module
-	  module.exports = function inherits(ctor, superCtor) {
-	    if (superCtor) {
-	      ctor.super_ = superCtor;
-	      ctor.prototype = Object.create(superCtor.prototype, {
-	        constructor: {
-	          value: ctor,
-	          enumerable: false,
-	          writable: true,
-	          configurable: true
-	        }
-	      });
-	    }
-	  };
-	} else {
-	  // old school shim for old browsers
-	  module.exports = function inherits(ctor, superCtor) {
-	    if (superCtor) {
-	      ctor.super_ = superCtor;
-	      var TempCtor = function () {};
-	      TempCtor.prototype = superCtor.prototype;
-	      ctor.prototype = new TempCtor();
-	      ctor.prototype.constructor = ctor;
-	    }
-	  };
-	}
-
-	},{}],20:[function(_dereq_,module,exports){
 
 
 	var assign         = _dereq_('object-assign');
@@ -1471,7 +1570,7 @@
 
 	module.exports = MultiMath;
 
-	},{"./lib/base64decode":21,"./lib/wa_detect":22,"object-assign":23}],21:[function(_dereq_,module,exports){
+	},{"./lib/base64decode":20,"./lib/wa_detect":21,"object-assign":22}],20:[function(_dereq_,module,exports){
 
 
 	var BASE64_MAP = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
@@ -1516,7 +1615,7 @@
 	  return out;
 	};
 
-	},{}],22:[function(_dereq_,module,exports){
+	},{}],21:[function(_dereq_,module,exports){
 
 
 	var wa;
@@ -1550,7 +1649,7 @@
 	  return wa;
 	};
 
-	},{}],23:[function(_dereq_,module,exports){
+	},{}],22:[function(_dereq_,module,exports){
 	/* eslint-disable no-unused-vars */
 	var getOwnPropertySymbols = Object.getOwnPropertySymbols;
 	var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -1635,7 +1734,7 @@
 		return to;
 	};
 
-	},{}],24:[function(_dereq_,module,exports){
+	},{}],23:[function(_dereq_,module,exports){
 	var bundleFn = arguments[3];
 	var sources = arguments[4];
 	var cache = arguments[5];
@@ -1780,7 +1879,6 @@
 	};
 	var DEFAULT_RESIZE_OPTS = {
 	  filter: 'mks2013',
-	  alpha: false,
 	  unsharpAmount: 0,
 	  unsharpRadius: 0.0,
 	  unsharpThreshold: 0
@@ -1999,9 +2097,7 @@
 
 
 	  if (utils.isCanvas(from)) {
-	    if (!stageEnv.srcCtx) stageEnv.srcCtx = from.getContext('2d', {
-	      alpha: Boolean(opts.alpha)
-	    }); // If input is Canvas - extract region data directly
+	    if (!stageEnv.srcCtx) stageEnv.srcCtx = from.getContext('2d'); // If input is Canvas - extract region data directly
 
 	    this.debug('Get tile pixel data');
 	    extractTo.src = stageEnv.srcCtx.getImageData(tile.x, tile.y, tile.width, tile.height).data;
@@ -2015,9 +2111,7 @@
 
 	  this.debug('Draw tile imageBitmap/image to temporary canvas');
 	  var tmpCanvas = this.options.createCanvas(tile.width, tile.height);
-	  var tmpCtx = tmpCanvas.getContext('2d', {
-	    alpha: Boolean(opts.alpha)
-	  });
+	  var tmpCtx = tmpCanvas.getContext('2d');
 	  tmpCtx.globalCompositeOperation = 'copy';
 	  tmpCtx.drawImage(stageEnv.srcImageBitmap || from, tile.x, tile.y, tile.width, tile.height, 0, 0, tile.width, tile.height);
 	  this.debug('Get tile pixel data');
@@ -2091,7 +2185,6 @@
 	        offsetX: tile.offsetX,
 	        offsetY: tile.offsetY,
 	        filter: opts.filter,
-	        alpha: opts.alpha,
 	        unsharpAmount: opts.unsharpAmount,
 	        unsharpRadius: opts.unsharpRadius,
 	        unsharpThreshold: opts.unsharpThreshold
@@ -2116,9 +2209,7 @@
 
 
 	  return Promise.resolve().then(function () {
-	    stageEnv.toCtx = to.getContext('2d', {
-	      alpha: Boolean(opts.alpha)
-	    });
+	    stageEnv.toCtx = to.getContext('2d');
 	    if (utils.isCanvas(from)) return null;
 
 	    if (utils.isImageBitmap(from)) {
@@ -2239,9 +2330,7 @@
 	Pica.prototype.__resizeViaCreateImageBitmap = function (from, to, opts) {
 	  var _this5 = this;
 
-	  var toCtx = to.getContext('2d', {
-	    alpha: Boolean(opts.alpha)
-	  });
+	  var toCtx = to.getContext('2d');
 	  this.debug('Resize via createImageBitmap()');
 	  return createImageBitmap(from, {
 	    resizeWidth: opts.toWidth,
@@ -2264,9 +2353,7 @@
 
 	    var tmpCanvas = _this5.options.createCanvas(opts.toWidth, opts.toHeight);
 
-	    var tmpCtx = tmpCanvas.getContext('2d', {
-	      alpha: Boolean(opts.alpha)
-	    });
+	    var tmpCtx = tmpCanvas.getContext('2d');
 	    tmpCtx.drawImage(imageBitmap, 0, 0);
 	    imageBitmap.close();
 	    var iData = tmpCtx.getImageData(0, 0, opts.toWidth, opts.toHeight);
@@ -2416,7 +2503,7 @@
 
 	module.exports = Pica;
 
-	},{"./lib/mathlib":1,"./lib/mm_resize/resize_filter_info":7,"./lib/pool":13,"./lib/stepper":14,"./lib/tiler":15,"./lib/utils":16,"./lib/worker":17,"object-assign":23,"webworkify":24}]},{},[])("/index.js")
+	},{"./lib/mathlib":1,"./lib/mm_resize/resize_filter_info":7,"./lib/pool":13,"./lib/stepper":14,"./lib/tiler":15,"./lib/utils":16,"./lib/worker":17,"object-assign":22,"webworkify":23}]},{},[])("/index.js")
 	});
 	}(pica$1));
 
