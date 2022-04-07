@@ -39,6 +39,34 @@ This package is not compaible with some minification options. If you use
 
 This should not cause notable assets increase
 
+A work-around solution to avoid bundling this package is to dynamically load the assets at runtime:
+
+```js
+// sudo code
+
+    const SCRIPT_ID = 'image-blob-reduce'
+
+    if (!document.getElementById(SCRIPT_ID)) {
+      const script = document.createElement('script')
+
+      script.setAttribute(
+        'src',
+        'https://unpkg.com/browse/image-blob-reduce@4.1.0/dist/image-blob-reduce.min.js',
+      )
+      script.setAttribute('id', SCRIPT_ID)
+
+      script.onload = () => {
+        setLoadingAssets(false)
+      }
+
+      script.onerror = (err) => {
+        console.error('There was an error loading FilesPickerInput assets', err)
+      }
+
+      document.body.appendChild(script)
+    }
+```
+
 
 Usage
 -----
