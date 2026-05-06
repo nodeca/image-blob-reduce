@@ -1,7 +1,7 @@
 image-blob-reduce - downscale blobs with images inside
 ======================================================
 
-[![CI](https://github.com/nodeca/image-blob-reduce/workflows/CI/badge.svg?branch=master)](https://github.com/nodeca/image-blob-reduce/actions)
+[![CI](https://github.com/nodeca/image-blob-reduce/actions/workflows/ci.yml/badge.svg)](https://github.com/nodeca/image-blob-reduce/actions/workflows/ci.yml)
 [![NPM version](https://img.shields.io/npm/v/image-blob-reduce.svg)](https://www.npmjs.org/package/image-blob-reduce)
 
 
@@ -149,7 +149,7 @@ reducer._calculate_size = function (env) {
 
   env.transform_width = Math.max(Math.round(env.image.width * scale_factor), 1);
   env.transform_height = Math.max(Math.round(env.image.height * scale_factor), 1);
-  
+
   return env;
 };
 ```
