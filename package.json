@@ -42,10 +42,10 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^21.0.1",
     "@rollup/plugin-node-resolve": "^13.0.6",
-    "electron": "^16.0.4",
-    "electron-mocha": "^11.0.2",
+    "electron": "^41.5.0",
+    "electron-mocha": "^13.1.0",
     "eslint": "^8.4.1",
-    "gh-pages": "^3.0.0",
+    "gh-pages": "^6.3.0",
     "rollup": "^2.29.0",
     "rollup-plugin-terser": "^7.0.2",
     "shelljs": "^0.8.4"
