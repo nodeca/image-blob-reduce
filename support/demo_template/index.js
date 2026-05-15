@@ -1,6 +1,6 @@
 'use strict'
 
-var reducer = new window.ImageBlobReduce({
+const reducer = new window.ImageBlobReduce({
   pica: window.ImageBlobReduce.pica({ features: ['js', 'wasm', 'ww'] })
 })
 

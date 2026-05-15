@@ -10,41 +10,41 @@ const image_traverse = require('../lib/image_traverse')
 
 describe('Browser', function () {
   it('should resize down to max size', async function () {
-    let image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
-    let blob = new Blob([image], { type: 'image/jpeg' })
-    let canvas = await resize.toCanvas(blob, { max: 10 })
+    const image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
+    const blob = new Blob([image], { type: 'image/jpeg' })
+    const canvas = await resize.toCanvas(blob, { max: 10 })
 
     assert.strictEqual(canvas.width, 5)
     assert.strictEqual(canvas.height, 10)
   })
 
   it('should fix jpeg orientation', async function () {
-    let image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
-    let blob = new Blob([image], { type: 'image/jpeg' })
-    let canvas = await resize.toCanvas(blob)
+    const image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
+    const blob = new Blob([image], { type: 'image/jpeg' })
+    const canvas = await resize.toCanvas(blob)
 
     assert.strictEqual(canvas.width, 16)
     assert.strictEqual(canvas.height, 32)
 
-    let px = canvas.getContext('2d').getImageData(15, 0, 1, 1).data
+    const px = canvas.getContext('2d').getImageData(15, 0, 1, 1).data
     assert.strictEqual(px[0], 0)
     assert.strictEqual(px[1], 0)
     assert.strictEqual(px[2], 0)
   })
 
   it('should resize into blob', async function () {
-    let image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
-    let blob = new Blob([image], { type: 'image/jpeg' })
-    let out = await resize.toBlob(blob, { max: 10 })
+    const image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
+    const blob = new Blob([image], { type: 'image/jpeg' })
+    const out = await resize.toBlob(blob, { max: 10 })
 
     assert.strictEqual(out.type, 'image/jpeg')
   })
 
   it('should keep exif in output', async function () {
-    let image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
-    let blob = new Blob([image], { type: 'image/jpeg' })
-    let blob_out = await resize.toBlob(blob)
-    let buf = new Uint8Array(await blob_out.arrayBuffer())
+    const image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
+    const blob = new Blob([image], { type: 'image/jpeg' })
+    const blob_out = await resize.toBlob(blob)
+    const buf = new Uint8Array(await blob_out.arrayBuffer())
 
     assert(blob.size !== blob_out.size, 'blob sizes should differ')
 

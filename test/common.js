@@ -10,7 +10,7 @@ const image_traverse = require('../lib/image_traverse')
 
 describe('Common', function () {
   it('is_jpeg', function () {
-    let image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
+    const image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
     assert(image_traverse.is_jpeg(image))
     image[1] = 0xFF
     assert(!image_traverse.is_jpeg(image))
@@ -18,8 +18,8 @@ describe('Common', function () {
 
   describe('jpeg_segments_each', function () {
     it('should begin with SOI and end with EOI', function () {
-      let image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
-      let segments = []
+      const image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
+      const segments = []
       image_traverse.jpeg_segments_each(image, segment => segments.push(segment))
       assert.strictEqual(segments[0].code, 0xD8)
       assert.strictEqual(segments[segments.length - 1].code, 0xD9)
@@ -28,15 +28,15 @@ describe('Common', function () {
 
   describe('jpeg_segments_filter', function () {
     it('output should be Uint8Array', async function () {
-      let image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
-      let result = image_traverse.jpeg_segments_filter(image, () => {})
+      const image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
+      const result = image_traverse.jpeg_segments_filter(image, () => {})
       assert(result instanceof Uint8Array)
     })
   })
 
   describe('jpeg_exif_tags_each', function () {
     it('should iterate through exif', async function () {
-      let expected_exif_fields = {
+      const expected_exif_fields = {
         '0:272:2:23': 'image_blob_reduce test',
         '0:274:3:1': [6],
         '0:282:5:1': null,
@@ -50,8 +50,8 @@ describe('Common', function () {
         '1:513:4:1': [258],
         '1:514:4:1': [658]
       }
-      let image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
-      let entries = {}
+      const image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
+      const entries = {}
       image_traverse.jpeg_exif_tags_each(image, entry => {
         entries[entry.ifd + ':' + entry.tag + ':' + entry.format + ':' + entry.count] = entry.value
       })
@@ -61,16 +61,16 @@ describe('Common', function () {
 
   describe('jpeg_exif_tags_filter', function () {
     it('output should be Uint8Array', async function () {
-      let image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
-      let result = image_traverse.jpeg_exif_tags_filter(image, () => {})
+      const image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
+      const result = image_traverse.jpeg_exif_tags_filter(image, () => {})
       assert(result instanceof Uint8Array)
     })
 
     it('output should have same tags as input', async function () {
-      let image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
-      let result = image_traverse.jpeg_exif_tags_filter(image, () => {})
-      let entries1 = {}
-      let entries2 = {}
+      const image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
+      const result = image_traverse.jpeg_exif_tags_filter(image, () => {})
+      const entries1 = {}
+      const entries2 = {}
       image_traverse.jpeg_exif_tags_each(image, entry => {
         if (entry.ifd === 1) return // thumbnails not supported yet
         entries1[entry.ifd + ':' + entry.tag + ':' + entry.format + ':' + entry.count] = entry.value
@@ -85,10 +85,10 @@ describe('Common', function () {
 
   describe('jpeg_add_comment', function () {
     it('should insert comment segment', async function () {
-      let image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
-      let result = image_traverse.jpeg_add_comment(image, '1')
-      let segments_in = []
-      let segments_out = []
+      const image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
+      const result = image_traverse.jpeg_add_comment(image, '1')
+      const segments_in = []
+      const segments_out = []
       image_traverse.jpeg_segments_each(image, segment => segments_in.push(segment) < 4)
       image_traverse.jpeg_segments_each(result, segment => segments_out.push(segment) < 4)
 
@@ -101,12 +101,12 @@ describe('Common', function () {
     })
 
     it('should encode input as utf8', async function () {
-      let image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
-      let result = image_traverse.jpeg_add_comment(image, 'тест')
-      let segments_out = []
+      const image = fs.readFileSync(path.join(__dirname, 'test.jpg'))
+      const result = image_traverse.jpeg_add_comment(image, 'тест')
+      const segments_out = []
       image_traverse.jpeg_segments_each(result, segment => segments_out.push(segment) < 3)
 
-      let comment = result.subarray(segments_out[2].offset, segments_out[2].offset + segments_out[2].length)
+      const comment = result.subarray(segments_out[2].offset, segments_out[2].offset + segments_out[2].length)
       assert.strictEqual(String.fromCharCode(...comment), '\xff\xfe\x00\x0b\xd1\x82\xd0\xb5\xd1\x81\xd1\x82\x00')
     })
   })

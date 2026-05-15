@@ -10,7 +10,7 @@ const banner = {
   }
 }
 
-const umd_out_base = { format: 'umd', name: 'ImageBlobReduce'/*, exports: 'named'*/ }
+const umd_out_base = { format: 'umd', name: 'ImageBlobReduce'/* , exports: 'named'*/ }
 
 
 export default {

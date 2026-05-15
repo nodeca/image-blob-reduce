@@ -1,8 +1,8 @@
 
 'use strict'
 
-var utils = require('./lib/utils')
-var pica = require('pica')
+const utils = require('./lib/utils')
+const pica = require('pica')
 
 function ImageBlobReduce (options) {
   if (!(this instanceof ImageBlobReduce)) return new ImageBlobReduce(options)
@@ -16,8 +16,8 @@ function ImageBlobReduce (options) {
 }
 
 
-ImageBlobReduce.prototype.use = function (plugin /*, params, ... */) {
-  var args = [this].concat(Array.prototype.slice.call(arguments, 1))
+ImageBlobReduce.prototype.use = function (plugin /* , params, ... */) {
+  const args = [this].concat(Array.prototype.slice.call(arguments, 1))
   plugin.apply(plugin, args)
   return this
 }
@@ -29,10 +29,10 @@ ImageBlobReduce.prototype.init = function () {
 
 
 ImageBlobReduce.prototype.toBlob = function (blob, options) {
-  var opts = utils.assign({ max: Infinity }, options)
-  var env = {
-    blob: blob,
-    opts: opts
+  const opts = utils.assign({ max: Infinity }, options)
+  const env = {
+    blob,
+    opts
   }
 
   if (!this.initialized) {
@@ -57,10 +57,10 @@ ImageBlobReduce.prototype.toBlob = function (blob, options) {
 
 
 ImageBlobReduce.prototype.toCanvas = function (blob, options) {
-  var opts = utils.assign({ max: Infinity }, options)
-  var env = {
-    blob: blob,
-    opts: opts
+  const opts = utils.assign({ max: Infinity }, options)
+  const env = {
+    blob,
+    opts
   }
 
   if (!this.initialized) {
@@ -81,8 +81,8 @@ ImageBlobReduce.prototype.before = function (method_name, fn) {
   if (!this[method_name]) throw new Error('Method "' + method_name + '" does not exist')
   if (typeof fn !== 'function') throw new Error('Invalid argument "fn", function expected')
 
-  var old_fn = this[method_name]
-  var self = this
+  const old_fn = this[method_name]
+  const self = this
 
   this[method_name] = function (env) {
     return fn.call(self, env).then(function (_env) {
@@ -98,8 +98,8 @@ ImageBlobReduce.prototype.after = function (method_name, fn) {
   if (!this[method_name]) throw new Error('Method "' + method_name + '" does not exist')
   if (typeof fn !== 'function') throw new Error('Invalid argument "fn", function expected')
 
-  var old_fn = this[method_name]
-  var self = this
+  const old_fn = this[method_name]
+  const self = this
 
   this[method_name] = function (env) {
     return old_fn.call(self, env).then(function (_env) {
@@ -112,7 +112,7 @@ ImageBlobReduce.prototype.after = function (method_name, fn) {
 
 
 ImageBlobReduce.prototype._blob_to_image = function (env) {
-  var URL = window.URL || window.webkitURL || window.mozURL || window.msURL
+  const URL = window.URL || window.webkitURL || window.mozURL || window.msURL
 
   env.image = document.createElement('img')
   env.image_url = URL.createObjectURL(env.blob)
@@ -130,7 +130,7 @@ ImageBlobReduce.prototype._calculate_size = function (env) {
   // Note, if your need not "symmetric" resize logic, you MUST check
   // `env.orientation` (set by plugins) and swap width/height appropriately.
   //
-  var scale_factor = env.opts.max / Math.max(env.image.width, env.image.height)
+  let scale_factor = env.opts.max / Math.max(env.image.width, env.image.height)
 
   if (scale_factor > 1) scale_factor = 1
 
@@ -153,7 +153,7 @@ ImageBlobReduce.prototype._transform = function (env) {
   env.transform_height = null
 
   // By default use alpha for png only
-  var pica_opts = { alpha: env.blob.type === 'image/png' }
+  const pica_opts = { alpha: env.blob.type === 'image/png' }
 
   // Extract pica options if been passed
   this.utils.assign(pica_opts, this.utils.pick_pica_resize_options(env.opts))
@@ -168,7 +168,7 @@ ImageBlobReduce.prototype._cleanup = function (env) {
   env.image.src = ''
   env.image = null
 
-  var URL = window.URL || window.webkitURL || window.mozURL || window.msURL
+  const URL = window.URL || window.webkitURL || window.mozURL || window.msURL
   if (URL.revokeObjectURL) URL.revokeObjectURL(env.image_url)
 
   env.image_url = null
@@ -194,7 +194,7 @@ ImageBlobReduce.prototype._getUint8Array = function (blob) {
   }
 
   return new Promise(function (resolve, reject) {
-    var fr = new FileReader()
+    const fr = new FileReader()
 
     fr.readAsArrayBuffer(blob)
 
