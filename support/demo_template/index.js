@@ -1,7 +1,7 @@
 'use strict'
 
 var reducer = new window.ImageBlobReduce({
-  pica: window.ImageBlobReduce.pica({ features: [ 'js', 'wasm', 'ww' ] })
+  pica: window.ImageBlobReduce.pica({ features: ['js', 'wasm', 'ww'] })
 })
 
 window.addEventListener('DOMContentLoaded', function () {

@@ -2,9 +2,9 @@
 'use strict'
 
 var utils = require('./lib/utils')
-var pica  = require('pica')
+var pica = require('pica')
 
-function ImageBlobReduce(options) {
+function ImageBlobReduce (options) {
   if (!(this instanceof ImageBlobReduce)) return new ImageBlobReduce(options)
 
   options = options || {}
@@ -17,7 +17,7 @@ function ImageBlobReduce(options) {
 
 
 ImageBlobReduce.prototype.use = function (plugin /*, params, ... */) {
-  var args = [ this ].concat(Array.prototype.slice.call(arguments, 1))
+  var args = [this].concat(Array.prototype.slice.call(arguments, 1))
   plugin.apply(plugin, args)
   return this
 }

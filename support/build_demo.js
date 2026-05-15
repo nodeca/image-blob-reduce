@@ -2,8 +2,6 @@
 
 'use strict'
 
-/* eslint-env es6 */
-
 var shell = require('shelljs')
 
 shell.rm('-rf', 'demo')
