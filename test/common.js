@@ -1,12 +1,9 @@
-
 'use strict'
-
 
 const assert = require('assert')
 const fs = require('fs')
 const path = require('path')
 const image_traverse = require('../lib/image_traverse')
-
 
 describe('Common', function () {
   it('is_jpeg', function () {

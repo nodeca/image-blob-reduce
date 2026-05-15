@@ -1,4 +1,3 @@
-
 'use strict'
 
 const utils = require('./lib/utils')
@@ -15,18 +14,15 @@ function ImageBlobReduce (options) {
   this.utils = utils
 }
 
-
 ImageBlobReduce.prototype.use = function (plugin /* , params, ... */) {
   const args = [this].concat(Array.prototype.slice.call(arguments, 1))
   plugin.apply(plugin, args)
   return this
 }
 
-
 ImageBlobReduce.prototype.init = function () {
   this.use(require('./lib/jpeg_plugins').assign)
 }
-
 
 ImageBlobReduce.prototype.toBlob = function (blob, options) {
   const opts = utils.assign({ max: Infinity }, options)
@@ -55,7 +51,6 @@ ImageBlobReduce.prototype.toBlob = function (blob, options) {
     })
 }
 
-
 ImageBlobReduce.prototype.toCanvas = function (blob, options) {
   const opts = utils.assign({ max: Infinity }, options)
   const env = {
@@ -76,7 +71,6 @@ ImageBlobReduce.prototype.toCanvas = function (blob, options) {
     .then(function (_env) { return _env.out_canvas })
 }
 
-
 ImageBlobReduce.prototype.before = function (method_name, fn) {
   if (!this[method_name]) throw new Error('Method "' + method_name + '" does not exist')
   if (typeof fn !== 'function') throw new Error('Invalid argument "fn", function expected')
@@ -92,7 +86,6 @@ ImageBlobReduce.prototype.before = function (method_name, fn) {
 
   return this
 }
-
 
 ImageBlobReduce.prototype.after = function (method_name, fn) {
   if (!this[method_name]) throw new Error('Method "' + method_name + '" does not exist')
@@ -110,7 +103,6 @@ ImageBlobReduce.prototype.after = function (method_name, fn) {
   return this
 }
 
-
 ImageBlobReduce.prototype._blob_to_image = function (env) {
   const URL = window.URL || window.webkitURL || window.mozURL || window.msURL
 
@@ -123,7 +115,6 @@ ImageBlobReduce.prototype._blob_to_image = function (env) {
     env.image.onload = function () { resolve(env) }
   })
 }
-
 
 ImageBlobReduce.prototype._calculate_size = function (env) {
   //
@@ -142,7 +133,6 @@ ImageBlobReduce.prototype._calculate_size = function (env) {
 
   return Promise.resolve(env)
 }
-
 
 ImageBlobReduce.prototype._transform = function (env) {
   env.out_canvas = this.pica.options.createCanvas(env.transform_width, env.transform_height)
@@ -163,7 +153,6 @@ ImageBlobReduce.prototype._transform = function (env) {
     .then(function () { return env })
 }
 
-
 ImageBlobReduce.prototype._cleanup = function (env) {
   env.image.src = ''
   env.image = null
@@ -176,7 +165,6 @@ ImageBlobReduce.prototype._cleanup = function (env) {
   return Promise.resolve(env)
 }
 
-
 ImageBlobReduce.prototype._create_blob = function (env) {
   return this.pica.toBlob(env.out_canvas, env.blob.type)
     .then(function (blob) {
@@ -184,7 +172,6 @@ ImageBlobReduce.prototype._create_blob = function (env) {
       return env
     })
 }
-
 
 ImageBlobReduce.prototype._getUint8Array = function (blob) {
   if (blob.arrayBuffer) {
@@ -208,7 +195,6 @@ ImageBlobReduce.prototype._getUint8Array = function (blob) {
     }
   })
 }
-
 
 ImageBlobReduce.pica = pica
 

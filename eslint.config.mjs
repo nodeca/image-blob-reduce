@@ -7,7 +7,6 @@ export default [
     ignores: [
       'demo/**',
       'dist/**',
-      'support/rollup.config.js'
     ]
   }),
 
@@ -21,7 +20,6 @@ export default [
   {
     files: ['test/**'],
     languageOptions: {
-      ecmaVersion: 2018,
       globals: globals.mocha
     }
   }
