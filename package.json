@@ -12,6 +12,16 @@
   ],
   "repository": "nodeca/image-blob-reduce",
   "license": "MIT",
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/puzrin"
+    },
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/nodeca"
+    }
+  ],
   "files": [
     "index.js",
     "lib/",
