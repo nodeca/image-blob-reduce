@@ -1,8 +1,8 @@
-'use strict';
+'use strict'
 
 var reducer = new window.ImageBlobReduce({
   pica: window.ImageBlobReduce.pica({ features: [ 'js', 'wasm', 'ww' ] })
-});
+})
 
 window.addEventListener('DOMContentLoaded', function () {
   document.getElementById('uploader').addEventListener('change', function () {
@@ -17,7 +17,7 @@ window.addEventListener('DOMContentLoaded', function () {
         }
       )
       .then(function (blob) {
-        document.getElementById('result').src = URL.createObjectURL(blob);
-      });
-  });
-});
+        document.getElementById('result').src = URL.createObjectURL(blob)
+      })
+  })
+})

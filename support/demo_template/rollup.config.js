@@ -1,5 +1,5 @@
-import nodeResolve from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
+import nodeResolve from '@rollup/plugin-node-resolve'
+import commonjs from '@rollup/plugin-commonjs'
 
 export default {
   input: 'support/demo_template/index.js',
@@ -12,4 +12,4 @@ export default {
     nodeResolve(),
     commonjs()
   ]
-};
+}
