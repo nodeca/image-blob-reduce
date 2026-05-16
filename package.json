@@ -30,8 +30,7 @@
   "module": "./lib/index.mjs",
   "exports": {
     "./package.json": "./package.json",
-    "./dist/image-blob-reduce.js": "./dist/image-blob-reduce.js",
-    "./lib/image_traverse.mjs": "./lib/image_traverse.mjs",
+    "./dist/*": "./dist/*",
     ".": {
       "import": "./lib/index.mjs",
       "require": "./dist/image-blob-reduce.js"

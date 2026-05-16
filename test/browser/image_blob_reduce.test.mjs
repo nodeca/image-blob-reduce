@@ -18,18 +18,20 @@ async function createReducer () {
 }
 
 describe('image_blob_reduce browser API', () => {
-  it('should expose ESM factory, class and pica exports', async () => {
+  it('should expose ESM factory, class and helper exports', async () => {
     const mod = await import('image-blob-reduce')
     const reducer = mod.default()
 
     expect(typeof mod.default).toBe('function')
     expect(typeof mod.ImageBlobReduce).toBe('function')
     expect(reducer).toBeInstanceOf(mod.ImageBlobReduce)
+    expect(typeof mod.image_traverse.is_jpeg).toBe('function')
     expect(typeof mod.pica).toBe('function')
     expect(typeof mod.Pica).toBe('function')
     expect(mod.default.pica).toBeUndefined()
     expect(mod.default.Pica).toBeUndefined()
     expect(mod.default.ImageBlobReduce).toBeUndefined()
+    expect(mod.default.image_traverse).toBeUndefined()
   })
 
   it('should resize down to max size', async () => {

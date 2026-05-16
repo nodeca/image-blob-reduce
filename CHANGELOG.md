@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added separate ESM exports: default `imageBlobReduce` factory and named
   `ImageBlobReduce` constructor.
-- Reexported `pica` factory and `Pica` constructor from package root.
+- Reexported `image_traverse`, `pica` factory and `Pica` constructor from
+  package root.
 
 ### Changed
 - Converted sources and tests to native ESM.

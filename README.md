@@ -125,17 +125,19 @@ Internal utility helpers, to simplify modifications.
 ### Reexports
 
 ```mjs
-import imageBlobReduce, { ImageBlobReduce, pica, Pica } from 'image-blob-reduce'
+import imageBlobReduce, { ImageBlobReduce, image_traverse, pica, Pica } from 'image-blob-reduce'
 ```
 
 - `imageBlobReduce` - default factory.
 - `ImageBlobReduce` - reducer constructor.
+- `image_traverse` - JPEG traversal helpers.
 - `pica` - `pica` factory.
 - `Pica` - `pica` constructor.
 
 Legacy static fields are available only in UMD build:
 
 - `window.imageBlobReduce.ImageBlobReduce`
+- `window.imageBlobReduce.image_traverse`
 - `window.imageBlobReduce.pica`
 - `window.imageBlobReduce.Pica`
 
