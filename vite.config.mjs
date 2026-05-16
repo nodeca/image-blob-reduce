@@ -9,7 +9,7 @@ const pkg = requireFromHere('./package.json')
 
 const banner = `/*! ${pkg.name} ${pkg.version} https://github.com/${pkg.repository} @license ${pkg.license} */`
 
-export default defineConfig({
+const libConfig = {
   build: {
     outDir: 'dist',
     emptyOutDir: true,
@@ -25,4 +25,15 @@ export default defineConfig({
       output: { banner }
     }
   }
-})
+}
+
+const demoConfig = {
+  root: 'demo',
+  base: './',
+  build: {
+    outDir: '../.gh-pages',
+    emptyOutDir: true
+  }
+}
+
+export default defineConfig(({ mode }) => mode === 'demo' ? demoConfig : libConfig)

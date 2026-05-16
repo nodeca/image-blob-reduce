@@ -41,8 +41,9 @@
     "test:dist": "npm run build && vitest run --project dist",
     "lint": "eslint .",
     "demo": "vite --host 127.0.0.1",
-    "gh-pages": "gh-pages -d . -f",
     "build": "vite build",
+    "build:demo": "vite build --mode demo",
+    "gh-pages": "npm run build:demo && gh-pages -d .gh-pages -f",
     "prepublishOnly": "npm run build && npm run gh-pages"
   },
   "dependencies": {
