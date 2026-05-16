@@ -1,5 +1,4 @@
 import neostandard from 'neostandard'
-import globals from 'globals'
 
 export default [
   ...neostandard({
@@ -16,11 +15,4 @@ export default [
       'one-var': 'off',
     }
   },
-
-  {
-    files: ['test/**'],
-    languageOptions: {
-      globals: globals.mocha
-    }
-  }
 ]

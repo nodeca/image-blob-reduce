@@ -37,9 +37,10 @@
   },
   "module": "./dist/image-blob-reduce.esm.mjs",
   "scripts": {
-    "test": "npm run lint && npm run test-common && npm run test-browser",
-    "test-common": "mocha ./test/common.js",
-    "test-browser": "electron-mocha -t 10s --renderer ./test/browser.js",
+    "test": "npm run lint && npm run build && npm run test:unit && vitest run --project browser && vitest run --project dist",
+    "test:unit": "vitest run --project unit",
+    "test:browser": "npm run build && vitest run --project browser",
+    "test:dist": "npm run build && vitest run --project dist",
     "lint": "eslint .",
     "demo": "node support/build_demo.js",
     "gh-pages": "npm run demo && gh-pages -d demo -f",
@@ -50,13 +51,14 @@
     "pica": "^9.0.0"
   },
   "devDependencies": {
-    "electron": "^41.5.0",
-    "electron-mocha": "^13.1.0",
+    "@vitest/browser": "^4.1.6",
+    "@vitest/browser-playwright": "^4.1.6",
     "eslint": "^9",
     "gh-pages": "^6.3.0",
-    "globals": "^15.15.0",
     "neostandard": "^0.13.0",
+    "playwright": "^1.60.0",
     "terser": "^5.47.1",
-    "vite": "^8.0.13"
+    "vite": "^8.0.13",
+    "vitest": "^4.1.6"
   }
 }
