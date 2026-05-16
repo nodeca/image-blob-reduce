@@ -23,29 +23,29 @@
     }
   ],
   "files": [
-    "lib/",
     "dist/"
   ],
   "main": "./dist/image-blob-reduce.js",
-  "module": "./lib/index.mjs",
+  "module": "./dist/image-blob-reduce.mjs",
   "exports": {
     "./package.json": "./package.json",
     "./dist/*": "./dist/*",
     ".": {
-      "import": "./lib/index.mjs",
+      "import": "./dist/image-blob-reduce.mjs",
       "require": "./dist/image-blob-reduce.js"
     }
   },
   "scripts": {
-    "test": "npm run lint && npm run build && npm run test:unit && vitest run --project browser && vitest run --project dist && vitest run --project package",
+    "test": "npm run lint && npm run type-check && npm run build && npm run test:unit && vitest run --project browser && vitest run --project dist && vitest run --project package",
     "test:unit": "vitest run --project unit",
     "test:browser": "npm run build && vitest run --project browser",
     "test:dist": "npm run build && vitest run --project dist",
     "test:package": "npm run build && vitest run --project package",
+    "type-check": "tsc --noEmit",
     "lint": "eslint .",
     "demo": "vite --host 127.0.0.1",
-    "build": "vite build",
-    "build:demo": "vite build --mode demo",
+    "build": "node support/build-dist.mjs",
+    "build:demo": "node support/build-demo.mjs",
     "gh-pages": "npm run build:demo && gh-pages -d .gh-pages -f",
     "prepublishOnly": "npm run build && npm run gh-pages"
   },
@@ -55,10 +55,12 @@
   "devDependencies": {
     "@vitest/browser": "^4.1.6",
     "@vitest/browser-playwright": "^4.1.6",
+    "@types/node": "^24.12.2",
     "eslint": "^9",
     "gh-pages": "^6.3.0",
     "neostandard": "^0.13.0",
     "playwright": "^1.60.0",
+    "typescript": "^6.0.3",
     "vite": "^8.0.13",
     "vitest": "^4.1.6"
   }

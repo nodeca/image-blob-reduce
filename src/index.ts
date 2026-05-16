@@ -1,10 +1,12 @@
 import pica, { Pica } from 'pica'
-import * as image_traverse from './image_traverse.mjs'
-import * as jpeg_plugins from './jpeg_plugins.mjs'
-import * as utils from './utils.mjs'
+import * as image_traverse from './image_traverse'
+import * as jpeg_plugins from './jpeg_plugins'
+import * as utils from './utils'
 
 class ImageBlobReduce {
-  constructor (options) {
+  [key: string]: any
+
+  constructor (options?: any) {
     options = options || {}
 
     this.pica = options.pica || pica({})
@@ -23,7 +25,7 @@ class ImageBlobReduce {
     this.use(jpeg_plugins.assign)
   }
 
-  toBlob (blob, options) {
+  toBlob (blob, options?: any) {
     const opts = utils.assign({ max: Infinity }, options)
     const env = {
       blob,
@@ -50,7 +52,7 @@ class ImageBlobReduce {
       })
   }
 
-  toCanvas (blob, options) {
+  toCanvas (blob, options?: any) {
     const opts = utils.assign({ max: Infinity }, options)
     const env = {
       blob,
@@ -103,7 +105,8 @@ class ImageBlobReduce {
   }
 
   _blob_to_image (env) {
-    const URL = window.URL || window.webkitURL || window.mozURL || window.msURL
+    const win = window as any
+    const URL = win.URL || win.webkitURL || win.mozURL || win.msURL
 
     env.image = document.createElement('img')
     env.image_url = URL.createObjectURL(env.blob)
@@ -161,7 +164,8 @@ class ImageBlobReduce {
     env.image.src = ''
     env.image = null
 
-    const URL = window.URL || window.webkitURL || window.mozURL || window.msURL
+    const win = window as any
+    const URL = win.URL || win.webkitURL || win.mozURL || win.msURL
     if (URL.revokeObjectURL) URL.revokeObjectURL(env.image_url)
 
     env.image_url = null
@@ -189,7 +193,7 @@ class ImageBlobReduce {
 
       fr.readAsArrayBuffer(blob)
 
-      fr.onload = function () { resolve(new Uint8Array(fr.result)) }
+      fr.onload = function () { resolve(new Uint8Array(fr.result as ArrayBuffer)) }
       fr.onerror = function () {
         reject(new Error('ImageBlobReduce: failed to load data from input blob'))
         fr.abort()
@@ -201,7 +205,7 @@ class ImageBlobReduce {
   }
 }
 
-function imageBlobReduce (options) {
+function imageBlobReduce (options?: any) {
   return new ImageBlobReduce(options)
 }
 

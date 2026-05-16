@@ -30,12 +30,14 @@ describe('dist builds', () => {
   it('UMD .js build should resize', async () => {
     await loadScript('/dist/image-blob-reduce.js')
 
-    expect(typeof window.imageBlobReduce).toBe('function')
-    expect(typeof window.imageBlobReduce.ImageBlobReduce).toBe('function')
-    expect(typeof window.imageBlobReduce.pica).toBe('function')
-    expect(typeof window.imageBlobReduce.Pica).toBe('function')
-    expect(window.imageBlobReduce()).toBeInstanceOf(window.imageBlobReduce.ImageBlobReduce)
+    const win = window as any
 
-    await assertResize(window.imageBlobReduce)
+    expect(typeof win.imageBlobReduce).toBe('function')
+    expect(typeof win.imageBlobReduce.ImageBlobReduce).toBe('function')
+    expect(typeof win.imageBlobReduce.pica).toBe('function')
+    expect(typeof win.imageBlobReduce.Pica).toBe('function')
+    expect(win.imageBlobReduce()).toBeInstanceOf(win.imageBlobReduce.ImageBlobReduce)
+
+    await assertResize(win.imageBlobReduce)
   })
 })

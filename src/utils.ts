@@ -1,8 +1,8 @@
-function assign (to) {
+function assign (to: any, ...sources: any[]) {
   let from
 
-  for (let s = 1; s < arguments.length; s++) {
-    from = Object(arguments[s])
+  for (let s = 0; s < sources.length; s++) {
+    from = Object(sources[s])
 
     for (const key in from) {
       if (Object.prototype.hasOwnProperty.call(from, key)) to[key] = from[key]
@@ -12,7 +12,7 @@ function assign (to) {
   return to
 }
 
-function pick (from, props) {
+function pick (from: any, props: string[]) {
   const to = {}
 
   props.forEach(function (key) {
@@ -22,7 +22,7 @@ function pick (from, props) {
   return to
 }
 
-function pick_pica_resize_options (from) {
+function pick_pica_resize_options (from: any) {
   return pick(from, [
     'alpha',
     'unsharpAmount',

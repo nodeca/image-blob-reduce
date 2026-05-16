@@ -1,4 +1,4 @@
-import * as image_traverse from './image_traverse.mjs'
+import * as image_traverse from './image_traverse'
 
 function jpeg_patch_exif (env) {
   return this._getUint8Array(env.blob).then(function (data) {

@@ -1,8 +1,8 @@
 // ////////////////////////////////////////////////////////////////////////
 // Helpers
 //
-function error (message, code) {
-  const err = new Error(message)
+function error (message, code?) {
+  const err = new Error(message) as any
   err.code = code
   return err
 }
@@ -47,6 +47,8 @@ function is_uint8array (bin) {
 //  - on_entry:   Number     - callback
 //
 class ExifParser {
+  [key: string]: any
+
   constructor (jpeg_bin, exif_start, exif_end) {
     // Uint8Array, exif without signature (which isn't included in offsets)
     this.input = jpeg_bin.subarray(exif_start, exif_end)
@@ -84,7 +86,7 @@ class ExifParser {
   }
 
   filter (on_entry) {
-    const ifds = {}
+    const ifds: any = {}
 
     // make sure IFD0 always exists
     ifds.ifd0 = { id: 0, entries: [] }

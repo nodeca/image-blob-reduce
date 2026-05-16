@@ -3,7 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
-import * as image_traverse from '../../lib/image_traverse.mjs'
+import * as image_traverse from '../../src/image_traverse'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

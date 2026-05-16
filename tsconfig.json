@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": [ "ESNext", "DOM", "WebWorker" ],
+    "strict": false,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": [ "node", "vitest/globals" ],
+    "paths": {
+      "image-blob-reduce": [ "./src/index.ts" ],
+      "image-blob-reduce/dist/*": [ "./dist/*" ]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts",
+    "test/**/*.d.ts",
+    "vitest.config.mjs"
+  ]
+}
