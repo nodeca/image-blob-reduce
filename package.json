@@ -23,16 +23,16 @@
     }
   ],
   "files": [
-    "index.js",
     "lib/",
     "dist/"
   ],
+  "main": "./lib/index.js",
   "exports": {
     "./package.json": "./package.json",
     "./lib/image_traverse.js": "./lib/image_traverse.js",
     ".": {
       "import": "./dist/image-blob-reduce.esm.mjs",
-      "require": "./index.js"
+      "require": "./lib/index.js"
     }
   },
   "module": "./dist/image-blob-reduce.esm.mjs",
@@ -43,23 +43,20 @@
     "lint": "eslint .",
     "demo": "node support/build_demo.js",
     "gh-pages": "npm run demo && gh-pages -d demo -f",
-    "build": "rollup -c support/rollup.config.js",
+    "build": "node support/build.js",
     "prepublishOnly": "npm run gh-pages"
   },
   "dependencies": {
     "pica": "^9.0.0"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^21.0.1",
-    "@rollup/plugin-node-resolve": "^13.0.6",
     "electron": "^41.5.0",
     "electron-mocha": "^13.1.0",
     "eslint": "^9",
     "gh-pages": "^6.3.0",
-    "rollup": "^2.29.0",
-    "rollup-plugin-terser": "^7.0.2",
-    "shelljs": "^0.8.4",
     "globals": "^15.15.0",
-    "neostandard": "^0.13.0"
+    "neostandard": "^0.13.0",
+    "terser": "^5.47.1",
+    "vite": "^8.0.13"
   }
 }

@@ -2,11 +2,35 @@
 
 'use strict'
 
-const shell = require('shelljs')
+const fs = require('node:fs')
+const path = require('node:path')
 
-shell.rm('-rf', 'demo')
-shell.mkdir('demo')
+async function main () {
+  const { build } = await import('vite')
 
-shell.cp('dist/image-blob-reduce.min.js', 'demo/image-blob-reduce.js')
-shell.cp('support/demo_template/index.html', 'demo/index.html')
-shell.exec('node_modules/.bin/rollup -c support/demo_template/rollup.config.js')
+  fs.rmSync('demo', { recursive: true, force: true })
+  fs.mkdirSync('demo')
+
+  fs.copyFileSync('dist/image-blob-reduce.min.js', 'demo/image-blob-reduce.js')
+  fs.copyFileSync('support/demo_template/index.html', 'demo/index.html')
+
+  await build({
+    configFile: false,
+    build: {
+      outDir: 'demo',
+      emptyOutDir: false,
+      minify: false,
+      lib: {
+        entry: path.resolve('support/demo_template/index.js'),
+        name: 'demo',
+        formats: ['iife'],
+        fileName: () => 'index.js'
+      }
+    }
+  })
+}
+
+main().catch(err => {
+  console.error(err)
+  process.exit(1)
+})
