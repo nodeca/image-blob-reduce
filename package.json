@@ -27,12 +27,19 @@
   ],
   "main": "./dist/image-blob-reduce.js",
   "module": "./dist/image-blob-reduce.mjs",
+  "types": "dist/image-blob-reduce.cjs.d.ts",
   "exports": {
     "./package.json": "./package.json",
     "./dist/*": "./dist/*",
     ".": {
-      "import": "./dist/image-blob-reduce.mjs",
-      "require": "./dist/image-blob-reduce.js"
+      "import": {
+        "types": "./dist/image-blob-reduce.es.d.ts",
+        "default": "./dist/image-blob-reduce.mjs"
+      },
+      "require": {
+        "types": "./dist/image-blob-reduce.cjs.d.ts",
+        "default": "./dist/image-blob-reduce.js"
+      }
     }
   },
   "scripts": {
@@ -60,6 +67,7 @@
     "gh-pages": "^6.3.0",
     "neostandard": "^0.13.0",
     "playwright": "^1.60.0",
+    "rollup-plugin-dts": "^6.4.1",
     "typescript": "^6.0.3",
     "vite": "^8.0.13",
     "vitest": "^4.1.6"

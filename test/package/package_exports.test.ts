@@ -17,6 +17,7 @@ describe('package exports', () => {
   })
 
   it('should resolve dist files through wildcard export', async () => {
+    // @ts-expect-error Runtime compatibility export; this subpath has no published types.
     const mod = await import('image-blob-reduce/dist/image-blob-reduce.js')
 
     expect(typeof mod.default).toBe('function')
