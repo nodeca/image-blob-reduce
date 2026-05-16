@@ -1,3 +1,19 @@
+Next
+----
+
+- Converted sources and tests to native ESM.
+- Added separate ESM exports: default `imageBlobReduce` factory and named
+  `ImageBlobReduce` constructor.
+- Reexported `pica` factory and `Pica` constructor from package root.
+- Bumped `pica` to v10.0.0.
+- Keep only one unminified ES2015 UMD build for legacy browser usage.
+- Changed UMD global to `window.imageBlobReduce`; legacy static fields are
+  exposed on UMD factory only.
+- Build demo as static assets into `.gh-pages/` for GitHub Pages publishing.
+- Removed generated `dist/` from repository; it is created during tests and
+  publishing.
+
+
 4.1.0 / 2021-12-10
 ------------------
 

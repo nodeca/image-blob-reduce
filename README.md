@@ -43,21 +43,36 @@ This should not cause notable assets increase
 Usage
 -----
 
-```js
-const reduce = require('image-blob-reduce')();
+```mjs
+import imageBlobReduce from 'image-blob-reduce'
+
+const reduce = imageBlobReduce()
 
 //...
 
 reduce
   .toBlob(image_blob, { max: 1000 })
-  .then(blob => { ... });
+  .then(blob => { ... })
 ```
 
-If you load prebuild script in browser, use `window.ImageBlobReduce`
+If you load prebuilt UMD script in browser, use `window.imageBlobReduce`.
 
 
 API
 ---
+
+### imageBlobReduce([options])
+
+Create new reducer instance.
+
+```mjs
+import imageBlobReduce, { ImageBlobReduce } from 'image-blob-reduce'
+
+const reduce = imageBlobReduce()
+
+reduce instanceof ImageBlobReduce // true
+```
+
 
 ### new ImageBlobReduce([options])
 
@@ -65,8 +80,6 @@ Create new reducer. Options:
 
 - `pica` - instance of `pica`, if you wish different defaults or shareable
   webworkers pool.
-
-Short call: `require('image_blob_reduce')()`
 
 
 ### .toBlob(in_blob, options) => Promise(out_blob)
@@ -106,12 +119,25 @@ Sugar to simplify assign of external plugins. Just calls
 
 ### .utils
 
-`require('./lib/utils')`, to simplify modifications.
+Internal utility helpers, to simplify modifications.
 
 
 ### Reexports
 
-- `ImageBlobReduce.pica` => `require('pica')` - useful to customize pica options.
+```mjs
+import imageBlobReduce, { ImageBlobReduce, pica, Pica } from 'image-blob-reduce'
+```
+
+- `imageBlobReduce` - default factory.
+- `ImageBlobReduce` - reducer constructor.
+- `pica` - `pica` factory.
+- `Pica` - `pica` constructor.
+
+Legacy static fields are available only in UMD build:
+
+- `window.imageBlobReduce.ImageBlobReduce`
+- `window.imageBlobReduce.pica`
+- `window.imageBlobReduce.Pica`
 
 
 ## Customization
@@ -125,31 +151,35 @@ specially designed for easy customization. See source code first.
 
 For example, if you wish force output to be always jpeg with some quality:
 
-```js
-const reducer = require('image-blob-reduce')();
+```mjs
+import imageBlobReduce from 'image-blob-reduce'
+
+const reducer = imageBlobReduce()
 
 reducer._create_blob = function (env) {
   return this.pica.toBlob(env.out_canvas, 'image/jpeg', 0.8)
     .then(function (blob) {
-      env.out_blob = blob;
-      return env;
-    });
-};
+      env.out_blob = blob
+      return env
+    })
+}
 ```
 
 Or rewrite scaling logic, introducing `min` option instead:
 
-```js
-const reducer = require('image-blob-reduce')();
+```mjs
+import imageBlobReduce from 'image-blob-reduce'
+
+const reducer = imageBlobReduce()
 
 reducer._calculate_size = function (env) {
-  const scale_factor = env.opts.min / Math.min(env.image.width, env.image.height);
+  const scale_factor = env.opts.min / Math.min(env.image.width, env.image.height)
 
-  if (scale_factor > 1) scale_factor = 1;
+  if (scale_factor > 1) scale_factor = 1
 
-  env.transform_width = Math.max(Math.round(env.image.width * scale_factor), 1);
-  env.transform_height = Math.max(Math.round(env.image.height * scale_factor), 1);
+  env.transform_width = Math.max(Math.round(env.image.width * scale_factor), 1)
+  env.transform_height = Math.max(Math.round(env.image.height * scale_factor), 1)
 
-  return env;
-};
+  return env
+}
 ```
