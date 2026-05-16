@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-'use strict'
+import path from 'node:path'
+import { createRequire } from 'node:module'
+import { fileURLToPath } from 'node:url'
 
-const path = require('node:path')
-const { createRequire } = require('node:module')
-
-const requireFromHere = createRequire(__filename)
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const requireFromHere = createRequire(import.meta.url)
 const pkg = requireFromHere('../package.json')
 
 const banner = `/*! ${pkg.name} ${pkg.version} https://github.com/${pkg.repository} @license ${pkg.license} */`
@@ -16,12 +16,13 @@ function buildConfig ({ format, fileName, minify = false, name }) {
     build: {
       outDir: 'dist',
       emptyOutDir: fileName === 'image-blob-reduce.js',
+      target: 'es2015',
       minify,
       terserOptions: {
         compress: { evaluate: false }
       },
       lib: {
-        entry: path.resolve('lib/index.js'),
+        entry: path.resolve(__dirname, '../lib/index_umd_proxy.mjs'),
         name,
         formats: [format],
         fileName: () => fileName
@@ -39,19 +40,7 @@ async function main () {
   await build(buildConfig({
     format: 'umd',
     fileName: 'image-blob-reduce.js',
-    name: 'ImageBlobReduce'
-  }))
-
-  await build(buildConfig({
-    format: 'umd',
-    fileName: 'image-blob-reduce.min.js',
-    minify: 'terser',
-    name: 'ImageBlobReduce'
-  }))
-
-  await build(buildConfig({
-    format: 'es',
-    fileName: 'image-blob-reduce.esm.mjs'
+    name: 'imageBlobReduce'
   }))
 }
 

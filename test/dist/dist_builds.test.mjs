@@ -27,21 +27,15 @@ async function assertResize (imageBlobReduce) {
 }
 
 describe('dist builds', () => {
-  it('full .js build should resize', async () => {
+  it('UMD .js build should resize', async () => {
     await loadScript('/dist/image-blob-reduce.js')
 
-    await assertResize(window.ImageBlobReduce)
-  })
+    expect(typeof window.imageBlobReduce).toBe('function')
+    expect(typeof window.imageBlobReduce.ImageBlobReduce).toBe('function')
+    expect(typeof window.imageBlobReduce.pica).toBe('function')
+    expect(typeof window.imageBlobReduce.Pica).toBe('function')
+    expect(window.imageBlobReduce()).toBeInstanceOf(window.imageBlobReduce.ImageBlobReduce)
 
-  it('minified .js build should resize', async () => {
-    await loadScript('/dist/image-blob-reduce.min.js')
-
-    await assertResize(window.ImageBlobReduce)
-  })
-
-  it('ESM build should resize', async () => {
-    const imageBlobReduce = (await import('/dist/image-blob-reduce.esm.mjs')).default
-
-    await assertResize(imageBlobReduce)
+    await assertResize(window.imageBlobReduce)
   })
 })

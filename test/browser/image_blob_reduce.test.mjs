@@ -12,12 +12,26 @@ async function fixtureBytes () {
 }
 
 async function createReducer () {
-  const imageBlobReduce = (await import('/dist/image-blob-reduce.esm.mjs')).default
+  const imageBlobReduce = (await import('/lib/index.mjs')).default
 
   return imageBlobReduce()
 }
 
 describe('image_blob_reduce browser API', () => {
+  it('should expose ESM factory, class and pica exports', async () => {
+    const mod = await import('/lib/index.mjs')
+    const reducer = mod.default()
+
+    expect(typeof mod.default).toBe('function')
+    expect(typeof mod.ImageBlobReduce).toBe('function')
+    expect(reducer).toBeInstanceOf(mod.ImageBlobReduce)
+    expect(typeof mod.pica).toBe('function')
+    expect(typeof mod.Pica).toBe('function')
+    expect(mod.default.pica).toBeUndefined()
+    expect(mod.default.Pica).toBeUndefined()
+    expect(mod.default.ImageBlobReduce).toBeUndefined()
+  })
+
   it('should resize down to max size', async () => {
     const reducer = await createReducer()
     const canvas = await reducer.toCanvas(await fixtureBlob(), { max: 10 })

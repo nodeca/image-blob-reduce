@@ -17,20 +17,20 @@ export default defineConfig({
         test: {
           name: 'unit',
           environment: 'node',
-          include: ['test/unit/**/*.test.js']
+          include: ['test/unit/**/*.test.mjs']
         }
       },
       {
         test: {
           name: 'browser',
-          include: ['test/browser/**/*.test.js'],
+          include: ['test/browser/**/*.test.mjs'],
           browser
         }
       },
       {
         test: {
           name: 'dist',
-          include: ['test/dist/**/*.test.js'],
+          include: ['test/dist/**/*.test.mjs'],
           browser
         }
       }
