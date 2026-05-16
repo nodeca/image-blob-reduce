@@ -1,21 +1,65 @@
 // ////////////////////////////////////////////////////////////////////////
 // Helpers
 //
-function error (message, code?) {
-  const err = new Error(message) as any
+interface ErrorWithCode extends Error {
+  code?: string
+}
+
+interface JpegSegment {
+  code: number
+  offset: number
+  length: number
+}
+
+interface ExifEntry {
+  is_big_endian: boolean
+  ifd: number
+  tag: number
+  format: number
+  count: number
+  entry_offset: number
+  data_length: number
+  data_offset: number
+  value: number[] | string | null
+  is_subifd_link: boolean
+}
+
+type JpegSegmentIterator = (segment: JpegSegment) => unknown
+type JpegSegmentFilter = (segment: JpegSegment) => unknown
+type ExifEntryIterator = (entry: ExifEntry) => unknown
+
+interface Ifd {
+  id: number
+  offset?: number
+  entries: ExifEntry[]
+  written_offset?: number
+  link_offset?: number
+}
+
+interface IfdToRead {
+  id: number
+  offset: number
+}
+
+type SegmentRange =
+  | { data: Uint8Array, start?: never, end?: never }
+  | { data?: never, start: number, end: number }
+
+function error (message: string, code?: string): ErrorWithCode {
+  const err = new Error(message) as ErrorWithCode
   err.code = code
   return err
 }
 
 // Convert number to 0xHH string
 //
-function to_hex (number) {
+function to_hex (number: number): string {
   let n = number.toString(16).toUpperCase()
   for (let i = 2 - n.length; i > 0; i--) n = '0' + n
   return '0x' + n
 }
 
-function utf8_encode (str) {
+function utf8_encode (str: string): string {
   try {
     return unescape(encodeURIComponent(str))
   } catch (_) {
@@ -23,7 +67,7 @@ function utf8_encode (str) {
   }
 }
 
-function utf8_decode (str) {
+function utf8_decode (str: string): string {
   try {
     return decodeURIComponent(escape(str))
   } catch (_) {
@@ -33,7 +77,7 @@ function utf8_decode (str) {
 
 // Check if input is a Uint8Array
 //
-function is_uint8array (bin) {
+function is_uint8array (bin: unknown): bin is Uint8Array {
   return Object.prototype.toString.call(bin) === '[object Uint8Array]'
 }
 
@@ -47,9 +91,14 @@ function is_uint8array (bin) {
 //  - on_entry:   Number     - callback
 //
 class ExifParser {
-  [key: string]: any
+  input: Uint8Array
+  start: number
+  big_endian: boolean
+  aborted = false
+  ifds_to_read: IfdToRead[] = []
+  output: Uint8Array = new Uint8Array(0)
 
-  constructor (jpeg_bin, exif_start, exif_end) {
+  constructor (jpeg_bin: Uint8Array, exif_start: number, exif_end: number) {
     // Uint8Array, exif without signature (which isn't included in offsets)
     this.input = jpeg_bin.subarray(exif_start, exif_end)
 
@@ -57,7 +106,7 @@ class ExifParser {
     this.start = exif_start
 
     // Check TIFF header (includes byte alignment and first IFD offset)
-    const sig = String.fromCharCode.apply(null, this.input.subarray(0, 4))
+    const sig = String.fromCharCode.apply(null, this.input.subarray(0, 4) as unknown as number[])
 
     if (sig !== 'II\x2A\0' && sig !== 'MM\0\x2A') {
       throw error('invalid TIFF signature', 'EBADDATA')
@@ -67,7 +116,7 @@ class ExifParser {
     this.big_endian = sig[0] === 'M'
   }
 
-  each (on_entry) {
+  each (on_entry: ExifEntryIterator): void {
     // allow premature exit
     this.aborted = false
 
@@ -80,18 +129,18 @@ class ExifParser {
 
     while (this.ifds_to_read.length > 0 && !this.aborted) {
       const i = this.ifds_to_read.shift()
-      if (!i.offset) continue
+      if (!i || !i.offset) continue
       this.scan_ifd(i.id, i.offset, on_entry)
     }
   }
 
-  filter (on_entry) {
-    const ifds: any = {}
+  filter (on_entry: ExifEntryIterator): Uint8Array {
+    const ifds: Record<string, Ifd> = {}
 
     // make sure IFD0 always exists
     ifds.ifd0 = { id: 0, entries: [] }
 
-    this.each(function (entry) {
+    this.each(function (entry: ExifEntry) {
       if (on_entry(entry) === false && !entry.is_subifd_link) return
       if (entry.is_subifd_link && entry.count !== 1 && entry.format !== 4) return // filter out bogus links
 
@@ -110,7 +159,7 @@ class ExifParser {
     Object.keys(ifds).forEach(function (ifd_no) {
       length += 2
 
-      ifds[ifd_no].entries.forEach(function (entry) {
+      ifds[ifd_no].entries.forEach(function (entry: ExifEntry) {
         length += 12 + (entry.data_length > 4 ? Math.ceil(entry.data_length / 2) * 2 : 0)
       })
 
@@ -134,10 +183,10 @@ class ExifParser {
 
       self.write_uint16(ifd_start, ifds[ifd_no].entries.length)
 
-      ifds[ifd_no].entries.sort(function (a, b) {
+      ifds[ifd_no].entries.sort(function (a: ExifEntry, b: ExifEntry) {
       // IFD entries must be in order of increasing tag IDs
         return a.tag - b.tag
-      }).forEach(function (entry, idx) {
+      }).forEach(function (entry: ExifEntry, idx: number) {
         const entry_offset = ifd_start + 2 + idx * 12
 
         self.write_uint16(entry_offset, entry.tag)
@@ -177,7 +226,7 @@ class ExifParser {
     return this.output
   }
 
-  read_uint16 (offset) {
+  read_uint16 (offset: number): number {
     const d = this.input
     if (offset + 2 > d.length) throw error('unexpected EOF', 'EBADDATA')
 
@@ -186,7 +235,7 @@ class ExifParser {
       : d[offset] + d[offset + 1] * 0x100
   }
 
-  read_uint32 (offset) {
+  read_uint32 (offset: number): number {
     const d = this.input
     if (offset + 4 > d.length) throw error('unexpected EOF', 'EBADDATA')
 
@@ -195,7 +244,7 @@ class ExifParser {
       : d[offset] + d[offset + 1] * 0x100 + d[offset + 2] * 0x10000 + d[offset + 3] * 0x1000000
   }
 
-  write_uint16 (offset, value) {
+  write_uint16 (offset: number, value: number): void {
     const d = this.output
 
     if (this.big_endian) {
@@ -207,7 +256,7 @@ class ExifParser {
     }
   }
 
-  write_uint32 (offset, value) {
+  write_uint32 (offset: number, value: number): void {
     const d = this.output
 
     if (this.big_endian) {
@@ -223,7 +272,7 @@ class ExifParser {
     }
   }
 
-  is_subifd_link (ifd, tag) {
+  is_subifd_link (ifd: number, tag: number): boolean {
     return (ifd === 0 && tag === 0x8769) || // SubIFD
            (ifd === 0 && tag === 0x8825) || // GPS Info
            (ifd === 0x8769 && tag === 0xA005) // Interop IFD
@@ -231,7 +280,7 @@ class ExifParser {
 
   // Returns byte length of a single component of a given format
   //
-  exif_format_length (format) {
+  exif_format_length (format: number): number {
     switch (format) {
       case 1: // byte
       case 2: // ascii
@@ -261,7 +310,7 @@ class ExifParser {
 
   // Reads Exif data
   //
-  exif_format_read (format, offset) {
+  exif_format_read (format: number, offset: number): number | null {
     let v
 
     switch (format) {
@@ -305,7 +354,7 @@ class ExifParser {
     }
   }
 
-  scan_ifd (ifd_no, offset, on_entry) {
+  scan_ifd (ifd_no: number, offset: number, on_entry: ExifEntryIterator): void {
     const entry_count = this.read_uint16(offset)
 
     offset += 2
@@ -324,7 +373,7 @@ class ExifParser {
         throw error('unexpected EOF', 'EBADDATA')
       }
 
-      let value = []
+      let value: number[] | string | null = []
       let comp_offset = data_offset
 
       for (let j = 0; j < count; j++, comp_offset += comp_length) {
@@ -393,7 +442,7 @@ class ExifParser {
 //
 // Returns true if it is and false otherwise
 //
-function is_jpeg (jpeg_bin) {
+function is_jpeg (jpeg_bin: Uint8Array): boolean {
   return jpeg_bin.length >= 4 && jpeg_bin[0] === 0xFF && jpeg_bin[1] === 0xD8 && jpeg_bin[2] === 0xFF
 }
 
@@ -412,7 +461,7 @@ function is_jpeg (jpeg_bin) {
 // Iteration stops when `EOI` (0xFFD9) marker is reached or if `on_segment`
 // function returns `false`.
 //
-function jpeg_segments_each (jpeg_bin, on_segment) {
+function jpeg_segments_each (jpeg_bin: Uint8Array, on_segment: JpegSegmentIterator): void {
   if (!is_uint8array(jpeg_bin)) {
     throw error('Invalid argument (jpeg_bin), Uint8Array expected', 'EINVAL')
   }
@@ -509,7 +558,7 @@ function jpeg_segments_each (jpeg_bin, on_segment) {
 //
 // Any data after `EOI` (0xFFD9) marker is removed.
 //
-function jpeg_segments_filter (jpeg_bin, on_segment) {
+function jpeg_segments_filter (jpeg_bin: Uint8Array, on_segment: JpegSegmentFilter): Uint8Array {
   if (!is_uint8array(jpeg_bin)) {
     throw error('Invalid argument (jpeg_bin), Uint8Array expected', 'EINVAL')
   }
@@ -518,7 +567,7 @@ function jpeg_segments_filter (jpeg_bin, on_segment) {
     throw error('Invalid argument (on_segment), Function expected', 'EINVAL')
   }
 
-  const ranges = []
+  const ranges: SegmentRange[] = []
   let out_length = 0
 
   jpeg_segments_each(jpeg_bin, function (segment) {
@@ -528,7 +577,7 @@ function jpeg_segments_filter (jpeg_bin, on_segment) {
       ranges.push({ data: new_segment })
       out_length += new_segment.length
     } else if (Array.isArray(new_segment)) {
-      new_segment.filter(is_uint8array).forEach(function (s) {
+      new_segment.filter(is_uint8array).forEach(function (s: Uint8Array) {
         ranges.push({ data: s })
         out_length += s.length
       })
@@ -581,7 +630,7 @@ function jpeg_segments_filter (jpeg_bin, on_segment) {
 // If Exif wasn't found anywhere (before start of the image data, SOS),
 // iterator is never executed.
 //
-function jpeg_exif_tags_each (jpeg_bin, on_exif_entry) {
+function jpeg_exif_tags_each (jpeg_bin: Uint8Array, on_exif_entry: ExifEntryIterator): void {
   if (!is_uint8array(jpeg_bin)) {
     throw error('Invalid argument (jpeg_bin), Uint8Array expected', 'EINVAL')
   }
@@ -635,7 +684,7 @@ function jpeg_exif_tags_each (jpeg_bin, on_exif_entry) {
 // If Exif wasn't found anywhere (before start of the image data, SOS),
 // iterator is never executed, and original JPEG is returned as is.
 //
-function jpeg_exif_tags_filter (jpeg_bin, on_exif_entry) {
+function jpeg_exif_tags_filter (jpeg_bin: Uint8Array, on_exif_entry: ExifEntryIterator): Uint8Array {
   if (!is_uint8array(jpeg_bin)) {
     throw error('Invalid argument (jpeg_bin), Uint8Array expected', 'EINVAL')
   }
@@ -682,7 +731,7 @@ function jpeg_exif_tags_filter (jpeg_bin, on_exif_entry) {
 // If JFIF (APP0) marker exists immediately after SOI (as mandated by the JFIF
 // spec), we insert comment after it instead.
 //
-function jpeg_add_comment (jpeg_bin, comment) {
+function jpeg_add_comment (jpeg_bin: Uint8Array, comment: string): Uint8Array {
   let comment_inserted = false, segment_count = 0
 
   return jpeg_segments_filter(jpeg_bin, function (segment) {
@@ -720,4 +769,13 @@ export {
   jpeg_exif_tags_each,
   jpeg_exif_tags_filter,
   jpeg_add_comment
+}
+
+export type {
+  ErrorWithCode,
+  JpegSegment,
+  JpegSegmentIterator,
+  JpegSegmentFilter,
+  ExifEntry,
+  ExifEntryIterator
 }

@@ -1,6 +1,7 @@
 import * as image_traverse from './image_traverse'
+import type { ImageBlobReduce, ImageBlobReduceEnv } from './index'
 
-function jpeg_patch_exif (env) {
+function jpeg_patch_exif (this: ImageBlobReduce, env: ImageBlobReduceEnv): Promise<ImageBlobReduceEnv> {
   return this._getUint8Array(env.blob).then(function (data) {
     env.is_jpeg = image_traverse.is_jpeg(data)
 
@@ -9,7 +10,8 @@ function jpeg_patch_exif (env) {
     env.orig_blob = env.blob
 
     try {
-      let exif_is_big_endian, orientation_offset
+      let exif_is_big_endian: boolean | undefined
+      let orientation_offset: number | undefined
 
       image_traverse.jpeg_exif_tags_each(data, function (entry) {
         if (entry.ifd === 0 && entry.tag === 0x112 && Array.isArray(entry.value)) {
@@ -37,21 +39,21 @@ function jpeg_patch_exif (env) {
   })
 }
 
-function jpeg_rotate_canvas (env) {
+function jpeg_rotate_canvas (this: ImageBlobReduce, env: ImageBlobReduceEnv): Promise<ImageBlobReduceEnv> {
   if (!env.is_jpeg) return Promise.resolve(env)
 
-  const orientation = env.orientation - 1
+  const orientation = (env.orientation || 1) - 1
   if (!orientation) return Promise.resolve(env)
 
   let canvas
 
   if (orientation & 4) {
-    canvas = this.pica.createCanvas(env.out_canvas.height, env.out_canvas.width)
+    canvas = this.pica.createCanvas(env.out_canvas!.height, env.out_canvas!.width)
   } else {
-    canvas = this.pica.createCanvas(env.out_canvas.width, env.out_canvas.height)
+    canvas = this.pica.createCanvas(env.out_canvas!.width, env.out_canvas!.height)
   }
 
-  const ctx = canvas.getContext('2d')
+  const ctx = canvas.getContext('2d')!
 
   ctx.save()
 
@@ -59,38 +61,38 @@ function jpeg_rotate_canvas (env) {
   if (orientation & 2) ctx.transform(-1, 0, 0, -1, canvas.width, canvas.height)
   if (orientation & 4) ctx.transform(0, 1, 1, 0, 0, 0)
 
-  ctx.drawImage(env.out_canvas, 0, 0)
+  ctx.drawImage(env.out_canvas!, 0, 0)
   ctx.restore()
 
   // Safari 12 workaround
   // https://github.com/nodeca/pica/issues/199
-  env.out_canvas.width = env.out_canvas.height = 0
+  env.out_canvas!.width = env.out_canvas!.height = 0
 
   env.out_canvas = canvas
 
   return Promise.resolve(env)
 }
 
-function jpeg_attach_orig_segments (env) {
+function jpeg_attach_orig_segments (this: ImageBlobReduce, env: ImageBlobReduceEnv): Promise<ImageBlobReduceEnv> {
   if (!env.is_jpeg) return Promise.resolve(env)
 
   return Promise.all([
     this._getUint8Array(env.blob),
-    this._getUint8Array(env.out_blob)
+    this._getUint8Array(env.out_blob!)
   ]).then(function (res) {
     const data = res[0]
     const data_out = res[1]
 
     if (!image_traverse.is_jpeg(data)) return Promise.resolve(env)
 
-    let segments = []
+    const segments: image_traverse.JpegSegment[] = []
 
     image_traverse.jpeg_segments_each(data, function (segment) {
       if (segment.code === 0xDA /* SOS */) return false
       segments.push(segment)
     })
 
-    segments = segments
+    const segment_data = segments
       .filter(function (segment) {
         // Drop ICC_PROFILE
         //
@@ -117,7 +119,7 @@ function jpeg_attach_orig_segments (env) {
 
     env.out_blob = new Blob(
       // intentionally omitting expected JFIF segment (offset 2 to 20)
-      [data_out.slice(0, 2)].concat(segments).concat([data_out.slice(20)]),
+      [data_out.slice(0, 2)].concat(segment_data).concat([data_out.slice(20)]),
       { type: 'image/jpeg' }
     )
 
@@ -125,7 +127,7 @@ function jpeg_attach_orig_segments (env) {
   })
 }
 
-function assign (reducer) {
+function assign (reducer: ImageBlobReduce): void {
   reducer.before('_blob_to_image', jpeg_patch_exif)
   reducer.after('_transform', jpeg_rotate_canvas)
   reducer.after('_create_blob', jpeg_attach_orig_segments)

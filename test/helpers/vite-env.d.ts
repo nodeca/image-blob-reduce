@@ -4,6 +4,6 @@ declare module '*?url' {
 }
 
 declare module 'image-blob-reduce/dist/*' {
-  const mod: any
+  const mod: unknown
   export default mod
 }

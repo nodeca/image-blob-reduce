@@ -20,7 +20,12 @@ async function createReducer () {
 describe('image_blob_reduce browser API', () => {
   it('should expose ESM factory, class and helper exports', async () => {
     const mod = await import('image-blob-reduce')
-    const defaultExport = mod.default as any
+    const defaultExport = mod.default as typeof mod.default & {
+      pica?: unknown
+      Pica?: unknown
+      ImageBlobReduce?: unknown
+      image_traverse?: unknown
+    }
     const reducer = mod.default()
 
     expect(typeof mod.default).toBe('function')
@@ -50,7 +55,7 @@ describe('image_blob_reduce browser API', () => {
     expect(canvas.width).toBe(16)
     expect(canvas.height).toBe(32)
 
-    const px = canvas.getContext('2d').getImageData(15, 0, 1, 1).data
+    const px = canvas.getContext('2d')!.getImageData(15, 0, 1, 1).data
 
     expect(px[0]).toBe(0)
     expect(px[1]).toBe(0)

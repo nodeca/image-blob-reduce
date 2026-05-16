@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 import * as image_traverse from '../../src/image_traverse'
+import type { ExifEntry, JpegSegment } from '../../src/image_traverse'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -24,7 +25,7 @@ describe('image_traverse', () => {
   describe('jpeg_segments_each', () => {
     it('should begin with SOI and end with EOI', () => {
       const image = readFixture()
-      const segments = []
+      const segments: JpegSegment[] = []
 
       image_traverse.jpeg_segments_each(image, segment => segments.push(segment))
 
@@ -59,7 +60,7 @@ describe('image_traverse', () => {
         '1:514:4:1': [658]
       }
       const image = readFixture()
-      const entries = {}
+      const entries: Record<string, ExifEntry['value']> = {}
 
       image_traverse.jpeg_exif_tags_each(image, entry => {
         entries[entry.ifd + ':' + entry.tag + ':' + entry.format + ':' + entry.count] = entry.value
@@ -80,8 +81,8 @@ describe('image_traverse', () => {
     it('output should have same tags as input', () => {
       const image = readFixture()
       const result = image_traverse.jpeg_exif_tags_filter(image, () => {})
-      const entries1 = {}
-      const entries2 = {}
+      const entries1: Record<string, ExifEntry['value']> = {}
+      const entries2: Record<string, ExifEntry['value']> = {}
 
       image_traverse.jpeg_exif_tags_each(image, entry => {
         if (entry.ifd === 1) return // thumbnails not supported yet
@@ -101,8 +102,8 @@ describe('image_traverse', () => {
     it('should insert comment segment', () => {
       const image = readFixture()
       const result = image_traverse.jpeg_add_comment(image, '1')
-      const segments_in = []
-      const segments_out = []
+      const segments_in: JpegSegment[] = []
+      const segments_out: JpegSegment[] = []
 
       image_traverse.jpeg_segments_each(image, segment => segments_in.push(segment) < 4)
       image_traverse.jpeg_segments_each(result, segment => segments_out.push(segment) < 4)
@@ -118,7 +119,7 @@ describe('image_traverse', () => {
     it('should encode input as utf8', () => {
       const image = readFixture()
       const result = image_traverse.jpeg_add_comment(image, 'тест')
-      const segments_out = []
+      const segments_out: JpegSegment[] = []
 
       image_traverse.jpeg_segments_each(result, segment => segments_out.push(segment) < 3)
 

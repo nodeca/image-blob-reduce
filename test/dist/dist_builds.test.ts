@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
+import type { ImageBlobReduce } from '../../src/index'
 
 import fixtureURL from '../fixtures/test.jpg?url'
 
-async function loadScript (url) {
+async function loadScript (url: string): Promise<void> {
   await new Promise((resolve, reject) => {
     const script = document.createElement('script')
 
@@ -18,7 +19,7 @@ async function fixtureBlob () {
   return response.blob()
 }
 
-async function assertResize (imageBlobReduce) {
+async function assertResize (imageBlobReduce: () => ImageBlobReduce): Promise<void> {
   const reducer = imageBlobReduce()
   const canvas = await reducer.toCanvas(await fixtureBlob(), { max: 10 })
 
@@ -30,14 +31,20 @@ describe('dist builds', () => {
   it('UMD .js build should resize', async () => {
     await loadScript('/dist/image-blob-reduce.js')
 
-    const win = window as any
+    const imageBlobReduce = (window as Window & {
+      imageBlobReduce?: (() => ImageBlobReduce) & {
+        ImageBlobReduce: typeof ImageBlobReduce
+        pica: unknown
+        Pica: unknown
+      }
+    }).imageBlobReduce!
 
-    expect(typeof win.imageBlobReduce).toBe('function')
-    expect(typeof win.imageBlobReduce.ImageBlobReduce).toBe('function')
-    expect(typeof win.imageBlobReduce.pica).toBe('function')
-    expect(typeof win.imageBlobReduce.Pica).toBe('function')
-    expect(win.imageBlobReduce()).toBeInstanceOf(win.imageBlobReduce.ImageBlobReduce)
+    expect(typeof imageBlobReduce).toBe('function')
+    expect(typeof imageBlobReduce.ImageBlobReduce).toBe('function')
+    expect(typeof imageBlobReduce.pica).toBe('function')
+    expect(typeof imageBlobReduce.Pica).toBe('function')
+    expect(imageBlobReduce()).toBeInstanceOf(imageBlobReduce.ImageBlobReduce)
 
-    await assertResize(win.imageBlobReduce)
+    await assertResize(imageBlobReduce)
   })
 })

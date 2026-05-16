@@ -15,7 +15,6 @@ export default [
     rules: {
       camelcase: 'off',
       'one-var': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
     }
   },
 ]
