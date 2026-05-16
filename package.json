@@ -40,10 +40,10 @@
     "test:browser": "npm run build && vitest run --project browser",
     "test:dist": "npm run build && vitest run --project dist",
     "lint": "eslint .",
-    "demo": "node support/build_demo.js",
-    "gh-pages": "npm run demo && gh-pages -d demo -f",
-    "build": "node support/build.mjs",
-    "prepublishOnly": "npm run build"
+    "demo": "vite --host 127.0.0.1",
+    "gh-pages": "gh-pages -d . -f",
+    "build": "vite build",
+    "prepublishOnly": "npm run build && npm run gh-pages"
   },
   "dependencies": {
     "pica": "^10.0.0"
