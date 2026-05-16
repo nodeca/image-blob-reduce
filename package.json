@@ -32,13 +32,17 @@
     "./package.json": "./package.json",
     "./dist/image-blob-reduce.js": "./dist/image-blob-reduce.js",
     "./lib/image_traverse.mjs": "./lib/image_traverse.mjs",
-    ".": "./lib/index.mjs"
+    ".": {
+      "import": "./lib/index.mjs",
+      "require": "./dist/image-blob-reduce.js"
+    }
   },
   "scripts": {
-    "test": "npm run lint && npm run build && npm run test:unit && vitest run --project browser && vitest run --project dist",
+    "test": "npm run lint && npm run build && npm run test:unit && vitest run --project browser && vitest run --project dist && vitest run --project package",
     "test:unit": "vitest run --project unit",
     "test:browser": "npm run build && vitest run --project browser",
     "test:dist": "npm run build && vitest run --project dist",
+    "test:package": "npm run build && vitest run --project package",
     "lint": "eslint .",
     "demo": "vite --host 127.0.0.1",
     "build": "vite build",

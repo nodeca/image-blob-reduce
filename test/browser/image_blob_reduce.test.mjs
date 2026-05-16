@@ -12,14 +12,14 @@ async function fixtureBytes () {
 }
 
 async function createReducer () {
-  const imageBlobReduce = (await import('/lib/index.mjs')).default
+  const imageBlobReduce = (await import('image-blob-reduce')).default
 
   return imageBlobReduce()
 }
 
 describe('image_blob_reduce browser API', () => {
   it('should expose ESM factory, class and pica exports', async () => {
-    const mod = await import('/lib/index.mjs')
+    const mod = await import('image-blob-reduce')
     const reducer = mod.default()
 
     expect(typeof mod.default).toBe('function')

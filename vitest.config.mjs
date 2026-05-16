@@ -33,6 +33,13 @@ export default defineConfig({
           include: ['test/dist/**/*.test.mjs'],
           browser
         }
+      },
+      {
+        test: {
+          name: 'package',
+          environment: 'node',
+          include: ['test/package/**/*.test.mjs']
+        }
       }
     ]
   }
