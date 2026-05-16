@@ -28,8 +28,20 @@ async function assertResize (imageBlobReduce: () => ImageBlobReduce): Promise<vo
 }
 
 describe('dist builds', () => {
-  it('UMD .js build should resize', async () => {
-    await loadScript('/dist/image-blob-reduce.js')
+  it('browser ESM .mjs build should resize', async () => {
+    // @ts-expect-error runtime URL, no static types
+    const mod = await import(/* @vite-ignore */ '/dist/image-blob-reduce.browser.min.mjs')
+    const imageBlobReduce: (() => ImageBlobReduce) = mod.default
+
+    expect(typeof imageBlobReduce).toBe('function')
+    expect(typeof mod.ImageBlobReduce).toBe('function')
+    expect(typeof mod.pica).toBe('function')
+
+    await assertResize(imageBlobReduce)
+  })
+
+  it('browser UMD .js build should resize', async () => {
+    await loadScript('/dist/image-blob-reduce.browser.min.js')
 
     const imageBlobReduce = (window as Window & {
       imageBlobReduce?: (() => ImageBlobReduce) & {

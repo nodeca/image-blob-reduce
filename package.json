@@ -40,6 +40,13 @@
         "types": "./dist/image-blob-reduce.cjs.d.ts",
         "default": "./dist/image-blob-reduce.js"
       }
+    },
+  "./browser": {
+      "import": {
+        "types": "./dist/image-blob-reduce.es.d.ts",
+        "default": "./dist/image-blob-reduce.browser.min.mjs"
+      },
+      "default": "./dist/image-blob-reduce.browser.min.js"
     }
   },
   "scripts": {
@@ -54,7 +61,8 @@
     "build": "node support/build-dist.mjs",
     "build:demo": "node support/build-demo.mjs",
     "gh-pages": "npm run build:demo && gh-pages -d .gh-pages -f",
-    "prepublishOnly": "npm run build && npm run gh-pages"
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run gh-pages"
   },
   "dependencies": {
     "pica": "^10.0.0"
