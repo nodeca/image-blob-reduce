@@ -62,7 +62,7 @@
     "build:demo": "node support/build-demo.mjs",
     "gh-pages": "npm run build:demo && gh-pages -d .gh-pages -f",
     "prepack": "npm run build",
-    "prepublishOnly": "npm run gh-pages"
+    "postpublish": "npm run gh-pages"
   },
   "dependencies": {
     "pica": "^10.0.0"
