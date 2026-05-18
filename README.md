@@ -8,13 +8,13 @@ image-blob-reduce - downscale blobs with images inside
 > Wrapper for [pica](https://github.com/nodeca/pica) to work with blobs, with
 > some sugar.
 
-This is `pica` wrapper for convenient work with images from file input fields.
+This is a `pica` wrapper for convenient work with images from file input fields.
 While `pica` works with raw bitmaps, this package operates with "image files".
 Additional features are:
 
-- \[jpeg] Apply orientation to downscaled result.
-- \[jpeg] Keep metadata, but with patched orientation & removed original color
-  profile.
+- \[jpeg] Apply orientation to the downscaled result.
+- \[jpeg] Keep metadata, but with patched orientation and the original color
+  profile removed.
 - Easy to monkey-patch for your needs.
 
 **[Demo](https://nodeca.github.io/image-blob-reduce/demo/)**
@@ -43,7 +43,8 @@ reduce
   .then(blob => { ... })
 ```
 
-If you load prebuilt UMD script in browser, use `window.imageBlobReduce`.
+If you load the prebuilt UMD script in a browser, use
+`window.imageBlobReduce`.
 
 > [!NOTE]
 > For a quick look at `dist/` folder contents, see
@@ -55,7 +56,7 @@ API
 
 ### imageBlobReduce([options])
 
-Create new reducer instance.
+Create a new reducer instance.
 
 ```mjs
 import imageBlobReduce, { ImageBlobReduce } from 'image-blob-reduce'
@@ -68,17 +69,17 @@ reduce instanceof ImageBlobReduce // true
 
 ### new ImageBlobReduce([options])
 
-Create new reducer. Options:
+Create a new reducer. Options:
 
-- `pica` - instance of `pica`, if you wish different defaults or shareable
-  webworkers pool.
+- `pica` - a `pica` instance, if you want different defaults or a shared
+  web worker pool.
 
 
 ### .toBlob(in_blob, options) => Promise(out_blob)
 
-Downscale image to fit into `max`\*`max` size. If blob contains jpeg, then
-orientation is applied and metadata from original image reused (with minimal
-change).
+Downscale an image to fit into `max`\*`max` size. If the blob contains a JPEG,
+orientation is applied and metadata from the original image is reused (with
+minimal changes).
 
 Options:
 
@@ -94,18 +95,19 @@ The same as `.toBlob()`, but with canvas output.
 
 ### .before(method_name, hook_fn)
 
-Inject your custom handler before specified method. See `.init()` source code
-for example.
+Inject your custom handler before the specified method. See the `.init()`
+source code for an example.
 
 
 ### .after(method_name, hook_fn)
 
-The same as `.before()`, but handler is injected after specified method.
+The same as `.before()`, but the handler is injected after the specified
+method.
 
 
 ### .use(plugin_init, ...params) => this
 
-Sugar to simplify assign of external plugins. Just calls
+Sugar to simplify the assignment of external plugins. Just calls
 `plugin_init(this, ...params)`.
 
 
@@ -132,13 +134,14 @@ Legacy static fields are available only in UMD build:
 ## Customization
 
 Since it's difficult to implement all possible options, this package is
-specially designed for easy customization. See source code first.
+specially designed for easy customization. See the source code first.
 
-- You can inherit class & replace existing methods.
-- You can add extra actions before/after existing method.
-- You can override existing methods of instance.
+- You can inherit from the class & replace existing methods.
+- You can add extra actions before/after existing methods.
+- You can override existing methods of an instance.
 
-For example, if you wish force output to be always jpeg with some quality:
+For example, if you wish to force output to always be JPEG with a certain
+quality:
 
 ```mjs
 import imageBlobReduce from 'image-blob-reduce'
@@ -154,7 +157,7 @@ reducer._create_blob = function (env) {
 }
 ```
 
-Or rewrite scaling logic, introducing `min` option instead:
+Or rewrite the scaling logic, introducing a `min` option instead:
 
 ```mjs
 import imageBlobReduce from 'image-blob-reduce'

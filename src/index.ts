@@ -152,7 +152,7 @@ class ImageBlobReduce {
 
   async _calculate_size (env: ImageBlobReduceEnv): Promise<ImageBlobReduceEnv> {
     //
-    // Note, if your need not "symmetric" resize logic, you MUST check
+    // Note: if you need non-symmetric resize logic, you MUST check
     // `env.orientation` (set by plugins) and swap width/height appropriately.
     //
     let scale_factor = env.opts.max / Math.max(env.image!.width, env.image!.height)
@@ -162,7 +162,7 @@ class ImageBlobReduce {
     env.transform_width = Math.max(Math.round(env.image!.width * scale_factor), 1)
     env.transform_height = Math.max(Math.round(env.image!.height * scale_factor), 1)
 
-    // Info for user plugins, to check if scaling applied
+    // Info for user plugins to check whether scaling was applied.
     env.scale_factor = scale_factor
 
     return env
@@ -173,8 +173,8 @@ class ImageBlobReduce {
 
     env.out_canvas = this.pica.createCanvas(env.transform_width!, env.transform_height!)
 
-    // Dim env temporary vars to prohibit use and avoid confusion when orientation
-    // changed. You should take real size from canvas.
+    // Dim temporary env vars to prevent use and avoid confusion when orientation
+    // changes. Take the real size from the canvas.
     env.transform_width = null
     env.transform_height = null
 

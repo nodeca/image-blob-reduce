@@ -97,9 +97,10 @@ async function jpeg_attach_orig_segments (this: ImageBlobReduce, env: ImageBlobR
       if (segment.code === 0xE2) return false
 
       // Keep all APPn segments excluding APP2 (ICC_PROFILE),
-      // remove others because most of them depend on image data (DCT and such).
+      // remove the others because most of them depend on image data
+      // (DCT and such).
       //
-      // APP0 - JFIF, APP1 - Exif, the rest are photoshop metadata and such
+      // APP0 - JFIF, APP1 - Exif, the rest are Photoshop metadata and such.
       //
       // See full list at https://www.w3.org/Graphics/JPEG/itu-t81.pdf (table B.1 on page 32)
       //
@@ -116,7 +117,7 @@ async function jpeg_attach_orig_segments (this: ImageBlobReduce, env: ImageBlobR
     })
 
   env.out_blob = new Blob(
-    // intentionally omitting expected JFIF segment (offset 2 to 20)
+    // Intentionally omit the expected JFIF segment (offset 2 to 20).
     [data_out.slice(0, 2)].concat(segment_data).concat([data_out.slice(20)]),
     { type: 'image/jpeg' }
   )

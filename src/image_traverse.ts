@@ -151,7 +151,8 @@ class ExifParser {
       ifds['ifd' + entry.ifd].entries.push(entry)
     })
 
-    // thumbnails are not supported just yet, so delete all information related to it
+    // Thumbnails are not supported just yet, so delete all information related
+    // to them.
     delete ifds.ifd1
 
     // Calculate output size
@@ -183,7 +184,7 @@ class ExifParser {
       this.write_uint16(ifd_start, ifds[ifd_no].entries.length)
 
       ifds[ifd_no].entries.sort(function (a: ExifEntry, b: ExifEntry) {
-      // IFD entries must be in order of increasing tag IDs
+        // IFD entries must be in order of increasing tag IDs.
         return a.tag - b.tag
       }).forEach((entry: ExifEntry, idx: number) => {
         const entry_offset = ifd_start + 2 + idx * 12
@@ -193,7 +194,7 @@ class ExifParser {
         this.write_uint32(entry_offset + 4, entry.count)
 
         if (entry.is_subifd_link) {
-        // filled in later
+          // Filled in later.
           if (ifds['ifd' + entry.tag]) ifds['ifd' + entry.tag].link_offset = entry_offset + 8
         } else if (entry.data_length <= 4) {
           this.output.set(
@@ -277,7 +278,7 @@ class ExifParser {
            (ifd === 0x8769 && tag === 0xA005) // Interop IFD
   }
 
-  // Returns byte length of a single component of a given format
+  // Returns the byte length of a single component of a given format.
   //
   exif_format_length (format: number): number {
     switch (format) {
@@ -302,12 +303,12 @@ class ExifParser {
         return 8
 
       default:
-      // unknown type
+      // Unknown type.
         return 0
     }
   }
 
-  // Reads Exif data
+  // Reads Exif data.
   //
   exif_format_read (format: number, offset: number): number | null {
     let v
@@ -348,7 +349,7 @@ class ExifParser {
         return null // blob
 
       default:
-      // unknown type
+      // Unknown type.
         return null
     }
   }
@@ -453,7 +454,7 @@ function is_jpeg (jpeg_bin: Uint8Array): boolean {
 //    - segment:  Object
 //      - code:   Number - marker type (2nd byte, e.g. 0xE0 for APP0)
 //      - offset: Number - offset of the first byte (0xFF) relative to `jpeg_bin` start
-//      - length: Number - length of the entire marker segment including first two bytes and length
+//      - length: Number - length of the entire marker segment, including marker bytes and length field
 //        - 2 for standalone markers
 //        - 4+length for markers with data
 //
@@ -545,7 +546,7 @@ function jpeg_segments_each (jpeg_bin: Uint8Array, on_segment: JpegSegmentIterat
 //    - segment:  Object
 //      - code:   Number - marker type (2nd byte, e.g. 0xE0 for APP0)
 //      - offset: Number - offset of the first byte (0xFF) relative to `jpeg_bin` start
-//      - length: Number - length of the entire marker segment including first two bytes and length
+//      - length: Number - length of the entire marker segment, including marker bytes and length field
 //        - 2 for standalone markers
 //        - 4+length for markers with data
 //
@@ -622,7 +623,7 @@ function jpeg_segments_filter (jpeg_bin: Uint8Array, on_segment: JpegSegmentFilt
 //      - data_offset:    Number  - start of data attached to Exif entry (will overlap with entry if length <= 4)
 //      - data_length:    Number  - length of data attached to Exif entry
 //      - value:          Array|String|Null - our best attempt at parsing data (not all formats supported right now)
-//      - is_subifd_link: Boolean - whether this entry is recognized to be a link to subifd (can't filter these out)
+//      - is_subifd_link: Boolean - whether this entry is recognized as a link to SubIFD (can't filter these out)
 //
 // Iteration stops early if iterator returns `false`.
 //
@@ -641,7 +642,7 @@ function jpeg_exif_tags_each (jpeg_bin: Uint8Array, on_exif_entry: ExifEntryIter
   jpeg_segments_each(jpeg_bin, function (segment) {
     if (segment.code === 0xDA /* SOS */) return false
 
-    // look for APP1 segment and compare header with 'Exif\0\0'
+    // Look for an APP1 segment and compare the header with 'Exif\0\0'.
     if (segment.code === 0xE1 && segment.length >= 10 &&
         jpeg_bin[segment.offset + 4] === 0x45 && jpeg_bin[segment.offset + 5] === 0x78 &&
         jpeg_bin[segment.offset + 6] === 0x69 && jpeg_bin[segment.offset + 7] === 0x66 &&
@@ -669,16 +670,16 @@ function jpeg_exif_tags_each (jpeg_bin: Uint8Array, on_exif_entry: ExifEntryIter
 //      - data_offset:    Number  - start of data attached to Exif entry (will overlap with entry if length <= 4)
 //      - data_length:    Number  - length of data attached to Exif entry
 //      - value:          Array|String|Null - our best attempt at parsing data (not all formats supported right now)
-//      - is_subifd_link: Boolean - whether this entry is recognized to be a link to subifd (can't filter these out)
+//      - is_subifd_link: Boolean - whether this entry is recognized as a link to SubIFD (can't filter these out)
 //
-// This function removes following from Exif:
-//  - all entries where iterator returned false (except subifd links which are mandatory)
+// This function removes the following from Exif:
+//  - all entries where the iterator returned false (except subifd links which are mandatory)
 //  - IFD1 and thumbnail image (the purpose of this function is to reduce file size,
 //    so thumbnail is usually the first thing to go)
-//  - all other data that isn't in IFD0, SubIFD, GPSIFD, InteropIFD
+//  - all other data that isn't in IFD0, SubIFD, GPSIFD or InteropIFD
 //    (theoretically possible proprietary extensions, I haven't seen any of these yet)
 //
-// Changing data inside Exif entries is NOT supported yet (modifying `entry` object inside callback may break stuff).
+// Changing data inside Exif entries is NOT supported yet (modifying the `entry` object inside the callback may break stuff).
 //
 // If Exif wasn't found anywhere (before start of the image data, SOS),
 // iterator is never executed, and original JPEG is returned as is.
@@ -698,7 +699,7 @@ function jpeg_exif_tags_filter (jpeg_bin: Uint8Array, on_exif_entry: ExifEntryIt
     if (stop_search) return
     if (segment.code === 0xDA /* SOS */) stop_search = true
 
-    // look for APP1 segment and compare header with 'Exif\0\0'
+    // Look for an APP1 segment and compare the header with 'Exif\0\0'.
     if (segment.code === 0xE1 && segment.length >= 10 &&
         jpeg_bin[segment.offset + 4] === 0x45 && jpeg_bin[segment.offset + 5] === 0x78 &&
         jpeg_bin[segment.offset + 6] === 0x69 && jpeg_bin[segment.offset + 7] === 0x66 &&
@@ -719,16 +720,16 @@ function jpeg_exif_tags_filter (jpeg_bin: Uint8Array, on_exif_entry: ExifEntryIt
   })
 }
 
-// Inserts a custom comment marker segment into JPEG file.
+// Inserts a custom comment marker segment into a JPEG file.
 //
 // Input:
 //  - jpeg_bin: Uint8Array - jpeg file
 //  - comment:  String
 //
-// Comment is inserted after first two bytes (FFD8, SOI).
+// The comment is inserted after the first two bytes (FFD8, SOI).
 //
 // If JFIF (APP0) marker exists immediately after SOI (as mandated by the JFIF
-// spec), we insert comment after it instead.
+// spec), we insert the comment after it instead.
 //
 function jpeg_add_comment (jpeg_bin: Uint8Array, comment: string): Uint8Array {
   let comment_inserted = false, segment_count = 0
