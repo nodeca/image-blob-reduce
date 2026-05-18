@@ -57,10 +57,8 @@
     "test:package": "npm run build && vitest run --project package",
     "type-check": "tsc --noEmit",
     "lint": "eslint .",
-    "demo": "vite --host 127.0.0.1",
     "build": "node support/build-dist.mjs",
-    "build:demo": "node support/build-demo.mjs",
-    "gh-pages": "npm run build:demo && gh-pages -d .gh-pages -f",
+    "gh-pages": "gh-pages -d . -s {demo,dist}/* -f",
     "prepack": "npm run build",
     "postpublish": "npm run gh-pages"
   },

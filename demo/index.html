@@ -3,13 +3,12 @@
   <head>
     <title>image-blob-reduce demo</title>
     <meta charset="utf-8">
-    <script type="module">
-      import imageBlobReduce from '../src/index.ts'
-
-      const reducer = imageBlobReduce()
-
+    <script src="../dist/image-blob-reduce.browser.min.js"></script>
+    <script>
       window.addEventListener('DOMContentLoaded', function () {
         document.getElementById('uploader').addEventListener('change', function () {
+          var reducer = window.imageBlobReduce()
+
           reducer
             .toBlob(
               this.files[0],

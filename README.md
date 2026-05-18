@@ -17,7 +17,7 @@ Additional features are:
   profile.
 - Easy to monkey-patch for your needs.
 
-**[Demo](https://nodeca.github.io/image-blob-reduce/)**
+**[Demo](https://nodeca.github.io/image-blob-reduce/demo/)**
 
 
 Install
@@ -44,6 +44,10 @@ reduce
 ```
 
 If you load prebuilt UMD script in browser, use `window.imageBlobReduce`.
+
+> [!NOTE]
+> For a quick look at `dist/` folder contents, see
+> <https://unpkg.com/image-blob-reduce@latest/>.
 
 
 API
