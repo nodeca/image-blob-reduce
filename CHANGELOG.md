@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Keep only one unminified ES2015 UMD build for legacy browser usage.
 - Changed UMD global to `window.imageBlobReduce`; legacy static fields are
   exposed on UMD factory only.
+- Removed legacy `reducer.utils`.
 - Removed generated `dist/` from repository; it is created during tests and
   publishing.
 - Build demo as static assets into `.gh-pages/` for GitHub Pages publishing.

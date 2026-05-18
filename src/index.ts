@@ -2,7 +2,6 @@ import pica, { Pica } from 'pica'
 import type { PicaCanvas, ResizeOptions as PicaResizeOptions } from 'pica'
 import * as image_traverse from './image_traverse'
 import * as jpeg_plugins from './jpeg_plugins'
-import * as utils from './utils'
 
 interface ImageBlobReduceOptions {
   pica?: Pica
@@ -47,15 +46,12 @@ type LegacyWindow = Window & {
 class ImageBlobReduce {
   pica: Pica
   initialized: boolean
-  utils: typeof utils
 
   constructor (options?: ImageBlobReduceOptions) {
     options = options || {}
 
     this.pica = options.pica || pica({})
     this.initialized = false
-
-    this.utils = utils
   }
 
   use (plugin: Plugin, ...params: unknown[]): this {
@@ -68,7 +64,7 @@ class ImageBlobReduce {
   }
 
   async toBlob (blob: Blob, options?: ImageBlobReduceResizeOptions): Promise<Blob> {
-    const opts = utils.assign({ max: Infinity }, options)
+    const opts = { max: Infinity, ...options }
     let env: ImageBlobReduceEnv = {
       blob,
       opts
@@ -93,7 +89,7 @@ class ImageBlobReduce {
   }
 
   async toCanvas (blob: Blob, options?: ImageBlobReduceResizeOptions): Promise<PicaCanvas> {
-    const opts = utils.assign({ max: Infinity }, options)
+    const opts = { max: Infinity, ...options }
     let env: ImageBlobReduceEnv = {
       blob,
       opts
@@ -182,8 +178,7 @@ class ImageBlobReduce {
     env.transform_width = null
     env.transform_height = null
 
-    const pica_opts = this.utils.assign({}, env.opts) as PicaResizeOptions & { max?: number }
-    delete pica_opts.max
+    const { max, ...pica_opts } = env.opts
 
     await this.pica.resize(env.image!, env.out_canvas, pica_opts)
 

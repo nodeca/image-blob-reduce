@@ -109,11 +109,6 @@ Sugar to simplify assign of external plugins. Just calls
 `plugin_init(this, ...params)`.
 
 
-### .utils
-
-Internal utility helpers, to simplify modifications.
-
-
 ### Reexports
 
 ```mjs
