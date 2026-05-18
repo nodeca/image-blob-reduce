@@ -6,23 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unpublished]
+## [Unreleased]
 ### Added
+- TypeScript declarations.
 - Added separate ESM exports: default `imageBlobReduce` factory and named
   `ImageBlobReduce` constructor.
-- Reexported `image_traverse`, `pica` factory and `Pica` constructor from
-  package root.
+- Added separate ESM, CJS and browser (with all dependencies) builds.
 
 ### Changed
-- Converted sources and tests to native ESM.
-- Bumped `pica` to v10.0.0.
-- Keep only one unminified ES2015 UMD build for legacy browser usage.
-- Changed UMD global to `window.imageBlobReduce`; legacy static fields are
-  exposed on UMD factory only.
+- Migrated to the ESM, TypeScript and Vite toolchain.
+- The default export is no longer a class, only a factory.
+- Bumped `pica` to v10.0.1, and synced resize options with it.
+- Browser global changed from `window.ImageBlobReduce` to
+  `window.imageBlobReduce`.
+
+### Removed
 - Removed legacy `reducer.utils`.
 - Removed generated `dist/` from repository; it is created during tests and
   publishing.
-- Build demo as static assets into `.gh-pages/` for GitHub Pages publishing.
 
 
 ## [4.1.0] - 2021-12-10
@@ -50,7 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.2.3] - 2021-04-19
 ### Fixed
-- Original Exif is now appended to resized JPEG image, #26.
+- Original Exif is now appended to the resized JPEG image, #26.
 
 
 ## [2.2.2] - 2021-01-15
@@ -96,7 +97,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.6] - 2020-07-31
 ### Fixed
-- jpeg plugin should create canvas via `pica`.
+- JPEG plugin should create canvas via `pica`.
 
 
 ## [1.0.5] - 2020-07-26
@@ -104,7 +105,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `.use()` method.
 
 ### Fixed
-- Check output blob type before transfer EXIF header.
+- Check output blob type before transferring the EXIF header.
 
 
 ## [1.0.4] - 2020-07-14
@@ -138,7 +139,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - First release.
 
 
-[Unpublished]: https://github.com/nodeca/image-blob-reduce/compare/4.1.0...HEAD
+[Unreleased]: https://github.com/nodeca/image-blob-reduce/compare/4.1.0...HEAD
 [4.1.0]: https://github.com/nodeca/image-blob-reduce/compare/4.0.0...4.1.0
 [4.0.0]: https://github.com/nodeca/image-blob-reduce/compare/3.0.1...4.0.0
 [3.0.1]: https://github.com/nodeca/image-blob-reduce/compare/3.0.0...3.0.1
