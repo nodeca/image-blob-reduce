@@ -24,26 +24,7 @@ function pick<T extends object, K extends keyof T> (from: T, props: K[]): Partia
   return to
 }
 
-interface PicaResizeOptionsSubset {
-  alpha?: boolean
-  unsharpAmount?: number
-  unsharpRadius?: number
-  unsharpThreshold?: number
-  cancelToken?: Promise<unknown>
-}
-
-function pick_pica_resize_options (from: PicaResizeOptionsSubset): PicaResizeOptionsSubset {
-  return pick(from, [
-    'alpha',
-    'unsharpAmount',
-    'unsharpRadius',
-    'unsharpThreshold',
-    'cancelToken'
-  ])
-}
-
 export {
   assign,
-  pick,
-  pick_pica_resize_options
+  pick
 }

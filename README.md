@@ -83,8 +83,8 @@ change).
 Options:
 
 - __max__ - max allowed image size.
-- __pica `.resize()` options__ - `alpha`, `unsharpAmount`, `unsharpRadius`,
-  `unsharpThreshold`, `cancelToken`
+- __pica `.resize()` options__ - `quality`, `filter`, `unsharpAmount`,
+  `unsharpRadius`, `unsharpThreshold`, `cancelToken`
 
 
 ### .toCanvas(in_blob, options) => Promise(out_canvas)

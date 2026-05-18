@@ -8,9 +8,8 @@ interface ImageBlobReduceOptions {
   pica?: Pica
 }
 
-interface ImageBlobReduceResizeOptions extends PicaResizeOptions {
+type ImageBlobReduceResizeOptions = PicaResizeOptions & {
   max?: number
-  alpha?: boolean
 }
 
 interface ImageBlobReduceEnv {
@@ -191,14 +190,11 @@ class ImageBlobReduce {
         env.transform_width = null
         env.transform_height = null
 
-        // By default use alpha for png only
-        const pica_opts = { alpha: env.blob.type === 'image/png' }
-
-        // Extract pica options if been passed
-        self.utils.assign(pica_opts, self.utils.pick_pica_resize_options(env.opts))
+        const pica_opts = self.utils.assign({}, env.opts) as PicaResizeOptions & { max?: number }
+        delete pica_opts.max
 
         return self.pica
-          .resize(env.image!, env.out_canvas, pica_opts as PicaResizeOptions)
+          .resize(env.image!, env.out_canvas, pica_opts)
           .then(function () { return env })
       })
   }
