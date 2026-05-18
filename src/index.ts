@@ -45,8 +45,8 @@ type LegacyWindow = Window & {
 
 class ImageBlobReduce {
   pica: Pica
-  initialized: boolean
-  _initPromise?: Promise<void>
+  private initialized: boolean
+  private _initPromise?: Promise<void>
 
   constructor (options?: ImageBlobReduceOptions) {
     options = options || {}
@@ -64,7 +64,7 @@ class ImageBlobReduce {
     this.use(jpeg_plugins.assign)
   }
 
-  async _ensureInitialized (): Promise<void> {
+  private async _ensureInitialized (): Promise<void> {
     if (!this._initPromise) {
       this._initPromise = Promise.resolve()
         .then(async () => {
