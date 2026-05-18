@@ -34,6 +34,8 @@ describe('image_blob_reduce browser API', () => {
     expect(typeof mod.image_traverse.is_jpeg).toBe('function')
     expect(typeof mod.pica).toBe('function')
     expect(typeof mod.Pica).toBe('function')
+    expect(typeof reducer.setup).toBe('function')
+    expect(typeof (reducer as typeof reducer & { init?: unknown }).init).toBe('undefined')
     expect(defaultExport.pica).toBeUndefined()
     expect(defaultExport.Pica).toBeUndefined()
     expect(defaultExport.ImageBlobReduce).toBeUndefined()
@@ -46,6 +48,27 @@ describe('image_blob_reduce browser API', () => {
 
     expect(canvas.width).toBe(5)
     expect(canvas.height).toBe(10)
+  })
+
+  it('should run setup once for concurrent first calls', async () => {
+    const mod = await import('image-blob-reduce')
+    const reducer = mod.default()
+    const setup = reducer.setup
+    let setup_calls = 0
+
+    reducer.setup = function () {
+      setup_calls++
+      return setup.call(this)
+    }
+
+    const blob = await fixtureBlob()
+
+    await Promise.all([
+      reducer.toCanvas(blob, { max: 10 }),
+      reducer.toCanvas(blob, { max: 10 })
+    ])
+
+    expect(setup_calls).toBe(1)
   })
 
   it('should fix jpeg orientation', async () => {

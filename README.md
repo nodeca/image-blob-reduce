@@ -96,7 +96,7 @@ The same as `.toBlob()`, but with canvas output.
 
 ### .before(method_name, hook_fn)
 
-Inject your custom handler before the specified method. See the `.init()`
+Inject your custom handler before the specified method. See the `.setup()`
 source code for an example.
 
 
@@ -110,6 +110,13 @@ method.
 
 Sugar to simplify the assignment of external plugins. Just calls
 `plugin_init(this, ...params)`.
+
+
+### .setup()
+
+Configure the instance before first use. By default, installs the built-in JPEG
+hooks. Override this method if you need to install custom plugins, add hooks or
+replace pipeline methods before processing starts.
 
 
 ### Reexports

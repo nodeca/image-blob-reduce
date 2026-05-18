@@ -46,6 +46,7 @@ type LegacyWindow = Window & {
 class ImageBlobReduce {
   pica: Pica
   initialized: boolean
+  _initPromise?: Promise<void>
 
   constructor (options?: ImageBlobReduceOptions) {
     options = options || {}
@@ -59,8 +60,21 @@ class ImageBlobReduce {
     return this
   }
 
-  init (): void {
+  setup (): void {
     this.use(jpeg_plugins.assign)
+  }
+
+  async _ensureInitialized (): Promise<void> {
+    if (!this._initPromise) {
+      this._initPromise = Promise.resolve()
+        .then(async () => {
+          this.setup()
+          await this.pica.init()
+          this.initialized = true
+        })
+    }
+
+    return this._initPromise
   }
 
   async toBlob (blob: Blob, options?: ImageBlobReduceResizeOptions): Promise<Blob> {
@@ -70,10 +84,7 @@ class ImageBlobReduce {
       opts
     }
 
-    if (!this.initialized) {
-      this.init()
-      this.initialized = true
-    }
+    await this._ensureInitialized()
 
     env = await this._blob_to_image(env)
     env = await this._calculate_size(env)
@@ -95,10 +106,7 @@ class ImageBlobReduce {
       opts
     }
 
-    if (!this.initialized) {
-      this.init()
-      this.initialized = true
-    }
+    await this._ensureInitialized()
 
     env = await this._blob_to_image(env)
     env = await this._calculate_size(env)
@@ -169,8 +177,6 @@ class ImageBlobReduce {
   }
 
   async _transform (env: ImageBlobReduceEnv): Promise<ImageBlobReduceEnv> {
-    await (this.pica.init ? this.pica.init() : this.pica)
-
     env.out_canvas = this.pica.createCanvas(env.transform_width!, env.transform_height!)
 
     // Dim temporary env vars to prevent use and avoid confusion when orientation

@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bumped `pica` to v10.0.1, and synced resize options with it.
 - Browser global changed from `window.ImageBlobReduce` to
   `window.imageBlobReduce`.
+- Renamed `.init()` to `.setup()`.
 
 ### Removed
 - Removed legacy `reducer.utils`.
