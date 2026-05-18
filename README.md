@@ -77,13 +77,14 @@ Create a new reducer. Options:
 
 ### .toBlob(in_blob, options) => Promise(out_blob)
 
-Downscale an image to fit into `max`\*`max` size. If the blob contains a JPEG,
-orientation is applied and metadata from the original image is reused (with
-minimal changes).
+Downscale an image so its width and height fit within `max`\*`max` pixels. For
+example, `{ max: 1000 }` limits the longest side to 1000 px; it does not limit
+the output blob size in bytes. If the blob contains a JPEG, orientation is
+applied and metadata from the original image is reused (with minimal changes).
 
 Options:
 
-- __max__ - max allowed image size.
+- __max__ - max allowed width/height, in pixels.
 - __pica `.resize()` options__ - `quality`, `filter`, `unsharpAmount`,
   `unsharpRadius`, `unsharpThreshold`, `cancelToken`
 
