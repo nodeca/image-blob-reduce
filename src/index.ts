@@ -67,9 +67,9 @@ class ImageBlobReduce {
     this.use(jpeg_plugins.assign)
   }
 
-  toBlob (blob: Blob, options?: ImageBlobReduceResizeOptions): Promise<Blob> {
+  async toBlob (blob: Blob, options?: ImageBlobReduceResizeOptions): Promise<Blob> {
     const opts = utils.assign({ max: Infinity }, options)
-    const env: ImageBlobReduceEnv = {
+    let env: ImageBlobReduceEnv = {
       blob,
       opts
     }
@@ -79,24 +79,22 @@ class ImageBlobReduce {
       this.initialized = true
     }
 
-    return Promise.resolve(env)
-      .then(this._blob_to_image)
-      .then(this._calculate_size)
-      .then(this._transform)
-      .then(this._cleanup)
-      .then(this._create_blob)
-      .then(function (_env) {
-        // Safari 12 workaround
-        // https://github.com/nodeca/pica/issues/199
-        _env.out_canvas!.width = _env.out_canvas!.height = 0
+    env = await this._blob_to_image(env)
+    env = await this._calculate_size(env)
+    env = await this._transform(env)
+    env = await this._cleanup(env)
+    env = await this._create_blob(env)
 
-        return _env.out_blob!
-      })
+    // Safari 12 workaround
+    // https://github.com/nodeca/pica/issues/199
+    env.out_canvas!.width = env.out_canvas!.height = 0
+
+    return env.out_blob!
   }
 
-  toCanvas (blob: Blob, options?: ImageBlobReduceResizeOptions): Promise<PicaCanvas> {
+  async toCanvas (blob: Blob, options?: ImageBlobReduceResizeOptions): Promise<PicaCanvas> {
     const opts = utils.assign({ max: Infinity }, options)
-    const env: ImageBlobReduceEnv = {
+    let env: ImageBlobReduceEnv = {
       blob,
       opts
     }
@@ -106,12 +104,12 @@ class ImageBlobReduce {
       this.initialized = true
     }
 
-    return Promise.resolve(env)
-      .then(this._blob_to_image)
-      .then(this._calculate_size)
-      .then(this._transform)
-      .then(this._cleanup)
-      .then(function (_env) { return _env.out_canvas! })
+    env = await this._blob_to_image(env)
+    env = await this._calculate_size(env)
+    env = await this._transform(env)
+    env = await this._cleanup(env)
+
+    return env.out_canvas!
   }
 
   before (method_name: HookMethodName, fn: Hook): this {
@@ -121,10 +119,9 @@ class ImageBlobReduce {
     const old_fn = this[method_name] as PipelineMethod
     const self = this
 
-    this[method_name] = function (env: ImageBlobReduceEnv): Promise<ImageBlobReduceEnv> {
-      return fn.call(self, env).then(function (_env) {
-        return old_fn.call(self, _env)
-      })
+    this[method_name] = async function (env: ImageBlobReduceEnv): Promise<ImageBlobReduceEnv> {
+      const _env = await fn.call(self, env)
+      return old_fn.call(self, _env)
     } as this[HookMethodName]
 
     return this
@@ -137,10 +134,9 @@ class ImageBlobReduce {
     const old_fn = this[method_name] as PipelineMethod
     const self = this
 
-    this[method_name] = function (env: ImageBlobReduceEnv): Promise<ImageBlobReduceEnv> {
-      return old_fn.call(self, env).then(function (_env) {
-        return fn.call(self, _env)
-      })
+    this[method_name] = async function (env: ImageBlobReduceEnv): Promise<ImageBlobReduceEnv> {
+      const _env = await old_fn.call(self, env)
+      return fn.call(self, _env)
     } as this[HookMethodName]
 
     return this
@@ -160,7 +156,7 @@ class ImageBlobReduce {
     })
   }
 
-  _calculate_size (env: ImageBlobReduceEnv): Promise<ImageBlobReduceEnv> {
+  async _calculate_size (env: ImageBlobReduceEnv): Promise<ImageBlobReduceEnv> {
     //
     // Note, if your need not "symmetric" resize logic, you MUST check
     // `env.orientation` (set by plugins) and swap width/height appropriately.
@@ -175,31 +171,28 @@ class ImageBlobReduce {
     // Info for user plugins, to check if scaling applied
     env.scale_factor = scale_factor
 
-    return Promise.resolve(env)
+    return env
   }
 
-  _transform (env: ImageBlobReduceEnv): Promise<ImageBlobReduceEnv> {
-    const self = this
+  async _transform (env: ImageBlobReduceEnv): Promise<ImageBlobReduceEnv> {
+    await (this.pica.init ? this.pica.init() : this.pica)
 
-    return Promise.resolve(this.pica.init ? this.pica.init() : this.pica)
-      .then(function () {
-        env.out_canvas = self.pica.createCanvas(env.transform_width!, env.transform_height!)
+    env.out_canvas = this.pica.createCanvas(env.transform_width!, env.transform_height!)
 
-        // Dim env temporary vars to prohibit use and avoid confusion when orientation
-        // changed. You should take real size from canvas.
-        env.transform_width = null
-        env.transform_height = null
+    // Dim env temporary vars to prohibit use and avoid confusion when orientation
+    // changed. You should take real size from canvas.
+    env.transform_width = null
+    env.transform_height = null
 
-        const pica_opts = self.utils.assign({}, env.opts) as PicaResizeOptions & { max?: number }
-        delete pica_opts.max
+    const pica_opts = this.utils.assign({}, env.opts) as PicaResizeOptions & { max?: number }
+    delete pica_opts.max
 
-        return self.pica
-          .resize(env.image!, env.out_canvas, pica_opts)
-          .then(function () { return env })
-      })
+    await this.pica.resize(env.image!, env.out_canvas, pica_opts)
+
+    return env
   }
 
-  _cleanup (env: ImageBlobReduceEnv): Promise<ImageBlobReduceEnv> {
+  async _cleanup (env: ImageBlobReduceEnv): Promise<ImageBlobReduceEnv> {
     env.image!.src = ''
     env.image = null
 
@@ -209,22 +202,17 @@ class ImageBlobReduce {
 
     env.image_url = null
 
-    return Promise.resolve(env)
+    return env
   }
 
-  _create_blob (env: ImageBlobReduceEnv): Promise<ImageBlobReduceEnv> {
-    return this.pica.toBlob(env.out_canvas!, env.blob.type)
-      .then(function (blob) {
-        env.out_blob = blob
-        return env
-      })
+  async _create_blob (env: ImageBlobReduceEnv): Promise<ImageBlobReduceEnv> {
+    env.out_blob = await this.pica.toBlob(env.out_canvas!, env.blob.type)
+    return env
   }
 
-  _getUint8Array (blob: Blob): Promise<Uint8Array> {
+  async _getUint8Array (blob: Blob): Promise<Uint8Array> {
     if (blob.arrayBuffer) {
-      return blob.arrayBuffer().then(function (buf) {
-        return new Uint8Array(buf)
-      })
+      return new Uint8Array(await blob.arrayBuffer())
     }
 
     return new Promise(function (resolve: (data: Uint8Array) => void, reject) {
