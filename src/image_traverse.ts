@@ -171,40 +171,39 @@ class ExifParser {
     this.write_uint16(2, 0x2A)
 
     let offset = 8
-    const self = this
     this.write_uint32(4, offset)
 
-    Object.keys(ifds).forEach(function (ifd_no) {
+    Object.keys(ifds).forEach((ifd_no) => {
       ifds[ifd_no].written_offset = offset
 
       const ifd_start = offset
       const ifd_end = ifd_start + 2 + ifds[ifd_no].entries.length * 12 + 4
       offset = ifd_end
 
-      self.write_uint16(ifd_start, ifds[ifd_no].entries.length)
+      this.write_uint16(ifd_start, ifds[ifd_no].entries.length)
 
       ifds[ifd_no].entries.sort(function (a: ExifEntry, b: ExifEntry) {
       // IFD entries must be in order of increasing tag IDs
         return a.tag - b.tag
-      }).forEach(function (entry: ExifEntry, idx: number) {
+      }).forEach((entry: ExifEntry, idx: number) => {
         const entry_offset = ifd_start + 2 + idx * 12
 
-        self.write_uint16(entry_offset, entry.tag)
-        self.write_uint16(entry_offset + 2, entry.format)
-        self.write_uint32(entry_offset + 4, entry.count)
+        this.write_uint16(entry_offset, entry.tag)
+        this.write_uint16(entry_offset + 2, entry.format)
+        this.write_uint32(entry_offset + 4, entry.count)
 
         if (entry.is_subifd_link) {
         // filled in later
           if (ifds['ifd' + entry.tag]) ifds['ifd' + entry.tag].link_offset = entry_offset + 8
         } else if (entry.data_length <= 4) {
-          self.output.set(
-            self.input.subarray(entry.data_offset - self.start, entry.data_offset - self.start + 4),
+          this.output.set(
+            this.input.subarray(entry.data_offset - this.start, entry.data_offset - this.start + 4),
             entry_offset + 8
           )
         } else {
-          self.write_uint32(entry_offset + 8, offset)
-          self.output.set(
-            self.input.subarray(entry.data_offset - self.start, entry.data_offset - self.start + entry.data_length),
+          this.write_uint32(entry_offset + 8, offset)
+          this.output.set(
+            this.input.subarray(entry.data_offset - this.start, entry.data_offset - this.start + entry.data_length),
             offset
           )
           offset += Math.ceil(entry.data_length / 2) * 2
@@ -215,9 +214,9 @@ class ExifParser {
       if (next_ifd) next_ifd.link_offset = ifd_end - 4
     })
 
-    Object.keys(ifds).forEach(function (ifd_no) {
+    Object.keys(ifds).forEach((ifd_no) => {
       if (ifds[ifd_no].written_offset && ifds[ifd_no].link_offset) {
-        self.write_uint32(ifds[ifd_no].link_offset, ifds[ifd_no].written_offset)
+        this.write_uint32(ifds[ifd_no].link_offset, ifds[ifd_no].written_offset)
       }
     })
 

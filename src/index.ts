@@ -117,12 +117,11 @@ class ImageBlobReduce {
     if (typeof fn !== 'function') throw new Error('Invalid argument "fn", function expected')
 
     const old_fn = this[method_name] as PipelineMethod
-    const self = this
 
-    this[method_name] = async function (env: ImageBlobReduceEnv): Promise<ImageBlobReduceEnv> {
-      const _env = await fn.call(self, env)
-      return old_fn.call(self, _env)
-    } as this[HookMethodName]
+    this[method_name] = (async (env: ImageBlobReduceEnv): Promise<ImageBlobReduceEnv> => {
+      const _env = await fn.call(this, env)
+      return old_fn.call(this, _env)
+    }) as this[HookMethodName]
 
     return this
   }
@@ -132,12 +131,11 @@ class ImageBlobReduce {
     if (typeof fn !== 'function') throw new Error('Invalid argument "fn", function expected')
 
     const old_fn = this[method_name] as PipelineMethod
-    const self = this
 
-    this[method_name] = async function (env: ImageBlobReduceEnv): Promise<ImageBlobReduceEnv> {
-      const _env = await old_fn.call(self, env)
-      return fn.call(self, _env)
-    } as this[HookMethodName]
+    this[method_name] = (async (env: ImageBlobReduceEnv): Promise<ImageBlobReduceEnv> => {
+      const _env = await old_fn.call(this, env)
+      return fn.call(this, _env)
+    }) as this[HookMethodName]
 
     return this
   }
