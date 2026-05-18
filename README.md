@@ -28,18 +28,6 @@ npm install image-blob-reduce
 ```
 
 
-Known issues
-------------
-
-This package is not compatible with some minification options. If you use
-`terser`, disable `evaluate` or all `compress` options:
-
-- `{ compress: { evaluate: false } }`
-- `{ compress: false }`
-
-This should not cause notable assets increase
-
-
 Usage
 -----
 
