@@ -64,4 +64,12 @@ describe('package exports', () => {
     expect(existsSync('dist/image-blob-reduce.browser.min.js.map')).toBe(true)
     expect(existsSync('dist/image-blob-reduce.browser.min.mjs.map')).toBe(true)
   })
+
+  it('should expose CJS named exports in declarations', () => {
+    const cjsTypes = readFileSync('dist/image-blob-reduce.cjs.d.ts', 'utf8')
+
+    expect(cjsTypes).toContain('declare const imageBlobReduceWithStatic')
+    expect(cjsTypes).toContain("export { Pica, default as pica } from 'pica';")
+    expect(cjsTypes).toContain('export { ImageBlobReduce, imageBlobReduceWithStatic as default, image_traverse };')
+  })
 })

@@ -31,7 +31,7 @@ async function buildDts (input, output) {
 
 async function buildDeclarations () {
   await buildDts('src/index.ts', 'dist/image-blob-reduce.es.d.ts')
-  await buildDts('src/index_cjs_proxy.ts', 'dist/image-blob-reduce.cjs.d.ts')
+  await buildDts('src/index_cjs_proxy_types.ts', 'dist/image-blob-reduce.cjs.d.ts')
 }
 
 await rm('dist', { recursive: true, force: true })
