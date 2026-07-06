@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>image-blob-reduce demo</title>
+    <meta charset="utf-8">
+    <script src="../dist/image-blob-reduce.browser.min.js"></script>
+    <script>
+      window.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('uploader').addEventListener('change', function () {
+          var reducer = window.imageBlobReduce()
+
+          reducer
+            .toBlob(
+              this.files[0],
+              {
+                max: 200,
+                unsharpAmount: 80,
+                unsharpRadius: 0.6,
+                unsharpThreshold: 2
+              }
+            )
+            .then(function (blob) {
+              document.getElementById('result').src = URL.createObjectURL(blob)
+            })
+        })
+      })
+    </script>
+  </head>
+  <body>
+    <div><input id="uploader" type="file"></div>
+    <div><img id="result"></div>
+  </body>
+</html>
